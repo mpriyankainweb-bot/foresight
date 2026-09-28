@@ -1,15 +1,20 @@
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlmodel import Session, select
 
 from backend.app.config import settings
-from backend.app.db import init_db
+from backend.app.db import engine, get_session, init_db
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
+from backend.app.models import ApiKeyRecord
 from backend.app.routers.analytics import router as analytics_router
 from backend.app.routers.demo import router as demo_router
 from backend.app.routers.deploys import router as deploys_router
+from backend.app.routers.incidents import router as incidents_router
+from backend.app.routers.keys import router as keys_router
 
 
 @asynccontextmanager
@@ -41,12 +46,31 @@ memory_service = MemoryService()
 llm_client = LLMClient()
 
 
-def verify_api_key(x_api_key: str | None = Header(None)):
-    if settings.API_KEY and x_api_key != settings.API_KEY:
+def verify_api_key(
+    x_api_key: str | None = Header(None),
+    session: Session = Depends(get_session),
+):
+    if not x_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "UNAUTHORIZED", "message": "Invalid or missing X-API-Key header"}},
+            detail={"error": {"code": "UNAUTHORIZED", "message": "Missing X-API-Key header"}},
         )
+
+    # Check default master key from config
+    if settings.API_KEY and x_api_key == settings.API_KEY:
+        return x_api_key
+
+    # Check database keys
+    db_key = session.exec(
+        select(ApiKeyRecord).where(ApiKeyRecord.key == x_api_key, ApiKeyRecord.is_active == True)
+    ).first()
+
+    if not db_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "UNAUTHORIZED", "message": "Invalid or inactive X-API-Key"}},
+        )
+
     return x_api_key
 
 
@@ -61,11 +85,13 @@ def health_check():
     }
 
 
-# Demo routes (unprotected per SPEC)
+# Demo & Keys routes (unprotected per SPEC for key generation and demo)
 app.include_router(demo_router)
+app.include_router(keys_router)
 
 # Protected API routes
 app.include_router(deploys_router, dependencies=[Depends(verify_api_key)])
+app.include_router(incidents_router, dependencies=[Depends(verify_api_key)])
 app.include_router(analytics_router, dependencies=[Depends(verify_api_key)])
 
 
@@ -87,10 +113,21 @@ def search_memory(q: str = Query(..., min_length=1, description="Search query st
 
 
 @app.exception_handler(HTTPException)
-def custom_http_exception_handler(request, exc: HTTPException):
+def custom_http_exception_handler(request: Request, exc: HTTPException):
     if isinstance(exc.detail, dict) and "error" in exc.detail:
         return JSONResponse(status_code=exc.status_code, content=exc.detail)
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": "HTTP_ERROR", "message": str(exc.detail)}},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    msg = errors[0].get("msg", "Validation error") if errors else "Invalid request data"
+    code = "INPUT_TOO_LARGE" if "maximum allowed limit" in msg else "VALIDATION_ERROR"
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"error": {"code": code, "message": msg}},
     )

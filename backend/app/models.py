@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from typing import Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Field as SQLField, SQLModel
+
+MAX_TEXT_LENGTH = 50000  # 50KB character limit per text field
 
 
 # SQLModel Database Models
@@ -37,6 +39,37 @@ class DeployOutcomeRecord(SQLModel, table=True):
     notes: Optional[str] = None
 
 
+class IncidentRecord(SQLModel, table=True):
+    id: str = SQLField(primary_key=True)
+    created_at: str = SQLField(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    service: str
+    title: str
+    alerts: str = ""
+    logs: str = ""
+    status: str = "active"  # active | resolved
+    resolution_notes: Optional[str] = None
+    postmortem_json: Optional[str] = None
+    resolved_at: Optional[str] = None
+
+
+class FixAttemptRecord(SQLModel, table=True):
+    id: str = SQLField(primary_key=True)
+    incident_id: str = SQLField(index=True)
+    created_at: str = SQLField(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    description: str
+    outcome: str  # worked | failed | temporary
+    held_for_days: Optional[int] = None
+    notes: Optional[str] = None
+
+
+class ApiKeyRecord(SQLModel, table=True):
+    id: str = SQLField(primary_key=True)
+    created_at: str = SQLField(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    key: str = SQLField(index=True, unique=True)
+    name: str = "default"
+    is_active: bool = True
+
+
 # Pydantic Schemas for API Requests & Responses
 
 class DeployCheckRequest(BaseModel):
@@ -48,6 +81,13 @@ class DeployCheckRequest(BaseModel):
     environment: str = "production"
     author: str = "Arjun"
     memory_enabled: bool = True
+
+    @field_validator("description", "diff", mode="before")
+    @classmethod
+    def validate_length(cls, v: Optional[str]) -> Optional[str]:
+        if v and len(v) > MAX_TEXT_LENGTH:
+            raise ValueError(f"Input text exceeds maximum allowed limit of {MAX_TEXT_LENGTH} characters.")
+        return v
 
 
 class SimilarIncidentItem(BaseModel):
@@ -101,6 +141,114 @@ class DeployOutcomeResponse(BaseModel):
     check_id: str
     outcome: str
 
+
+# Incident Schemas
+
+class FixSuggestionItem(BaseModel):
+    id: str
+    description: str
+    outcome: str  # worked | failed | temporary
+    held_for_days: Optional[int] = None
+    confidence: float = 0.9
+    source_incident_id: Optional[str] = None
+    reasoning: str = ""
+
+
+class CreateIncidentRequest(BaseModel):
+    service: str
+    title: str
+    alerts: str = ""
+    logs: str = ""
+
+    @field_validator("alerts", "logs", "title", mode="before")
+    @classmethod
+    def validate_length(cls, v: Optional[str]) -> Optional[str]:
+        if v and len(v) > MAX_TEXT_LENGTH:
+            raise ValueError(f"Input exceeds maximum allowed limit of {MAX_TEXT_LENGTH} characters.")
+        return v
+
+
+class CreateIncidentResponse(BaseModel):
+    incident_id: str
+    service: str
+    title: str
+    status: str
+    ranked_fix_suggestions: list[FixSuggestionItem]
+    memory_citations: list[MemoryCitationItem]
+    memory_used: bool
+
+
+class LogFixAttemptRequest(BaseModel):
+    description: str
+    outcome: str  # worked | failed | temporary
+    held_for_days: Optional[int] = None
+    notes: Optional[str] = None
+
+    @field_validator("outcome")
+    @classmethod
+    def validate_outcome(cls, v: str) -> str:
+        v_lower = v.lower()
+        if v_lower not in ("worked", "failed", "temporary"):
+            raise ValueError("outcome must be one of: 'worked', 'failed', 'temporary'")
+        return v_lower
+
+    @field_validator("description", "notes", mode="before")
+    @classmethod
+    def validate_length(cls, v: Optional[str]) -> Optional[str]:
+        if v and len(v) > MAX_TEXT_LENGTH:
+            raise ValueError(f"Input exceeds maximum allowed limit of {MAX_TEXT_LENGTH} characters.")
+        return v
+
+
+class LogFixAttemptResponse(BaseModel):
+    status: str
+    attempt_id: str
+    incident_id: str
+    outcome: str
+
+
+class ResolveIncidentRequest(BaseModel):
+    root_cause: str = ""
+    resolution_notes: str = ""
+
+    @field_validator("root_cause", "resolution_notes", mode="before")
+    @classmethod
+    def validate_length(cls, v: Optional[str]) -> Optional[str]:
+        if v and len(v) > MAX_TEXT_LENGTH:
+            raise ValueError(f"Input exceeds maximum allowed limit of {MAX_TEXT_LENGTH} characters.")
+        return v
+
+
+class PostmortemDraft(BaseModel):
+    title: str
+    summary: str
+    root_cause: str
+    timeline: list[str] = Field(default_factory=list)
+    fix_that_worked: str
+    fixes_that_failed: list[str] = Field(default_factory=list)
+    temporary_fixes: list[str] = Field(default_factory=list)
+    action_items: list[str] = Field(default_factory=list)
+
+
+class ResolveIncidentResponse(BaseModel):
+    status: str
+    incident_id: str
+    postmortem: PostmortemDraft
+
+
+# API Key Schemas
+
+class GenerateApiKeyRequest(BaseModel):
+    name: str = "default"
+
+
+class GenerateApiKeyResponse(BaseModel):
+    api_key: str
+    name: str
+    created_at: str
+
+
+# Demo & Analytics Schemas
 
 class DemoReplayResponse(BaseModel):
     status: str
