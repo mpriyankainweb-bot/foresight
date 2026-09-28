@@ -34,6 +34,10 @@ python_version = "3.11"
 strict = false
 ignore_missing_imports = true
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 python_files = "test_*.py"

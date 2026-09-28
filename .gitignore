@@ -6,6 +6,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .env
+*.db
 dist/
 build/
 *.egg-info/
