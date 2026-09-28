@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - FORESIGHT_MODE=${FORESIGHT_MODE:-offline}
+      - API_KEY=${API_KEY:-foresight-secret-key-123}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - HINDSIGHT_API_KEY=${HINDSIGHT_API_KEY:-}
+      - HINDSIGHT_BANK_ID=${HINDSIGHT_BANK_ID:-foresight-paynest}
+    env_file:
+      - .env.example
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend

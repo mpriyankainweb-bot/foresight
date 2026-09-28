@@ -1,0 +1,407 @@
+[
+  {
+    "id": "DEP-2024-001",
+    "title": "Lower gateway retry timeout from 30s to 8s",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2024-08-12T14:00:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=8000"],
+    "outcome": "incident",
+    "incident_id": "INC-2024-001"
+  },
+  {
+    "id": "DEP-2024-002",
+    "title": "Rollback gateway retry timeout to 30s and deploy idempotency header",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Priya",
+    "date": "2024-08-12T14:58:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=30000", "ENFORCE_IDEMPOTENCY_HEADER=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-003",
+    "title": "Sync retry config across gateway staging cluster",
+    "service": "payments-gateway",
+    "environment": "staging",
+    "author": "Arjun",
+    "date": "2024-08-20T10:15:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=30000"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-004",
+    "title": "Card processor config sync update",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "DevOps",
+    "date": "2024-09-03T18:00:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=8000", "CARD_RETRY_INTERVAL_MS=5000"],
+    "outcome": "incident",
+    "incident_id": "INC-2024-002"
+  },
+  {
+    "id": "DEP-2024-005",
+    "title": "Enforce mandatory idempotency check and lock timeout >=25s",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Priya",
+    "date": "2024-09-03T18:50:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=25000", "STRICT_IDEMPOTENCY_LOCK=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-006",
+    "title": "Settlement service query optimization release",
+    "service": "settlement-service",
+    "environment": "production",
+    "author": "Rohan",
+    "date": "2024-03-15T02:00:00Z",
+    "config_changes": ["DB_POOL_SIZE=100"],
+    "outcome": "incident",
+    "incident_id": "INC-2024-003"
+  },
+  {
+    "id": "DEP-2024-007",
+    "title": "Chunked settlement transaction migration",
+    "service": "settlement-service",
+    "environment": "production",
+    "author": "Rohan",
+    "date": "2024-03-15T03:20:00Z",
+    "config_changes": ["DB_POOL_SIZE=50", "CHUNKED_TRANSACTIONS=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-008",
+    "title": "Rotate internal auth certificates",
+    "service": "auth-service",
+    "environment": "production",
+    "author": "SecurityBot",
+    "date": "2024-04-10T09:25:00Z",
+    "config_changes": ["TLS_CERT_PATH=/etc/certs/2024-v2.crt"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-009",
+    "title": "Separate Redis clusters for session and analytics",
+    "service": "auth-service",
+    "environment": "production",
+    "author": "Neha",
+    "date": "2024-05-18T12:45:00Z",
+    "config_changes": ["REDIS_EVICTION_POLICY=volatile-lru"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-010",
+    "title": "Sliding window rate limiter patch",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Suresh",
+    "date": "2024-06-01T17:00:00Z",
+    "config_changes": ["RATE_LIMITER_BACKEND=redis", "RATE_LIMITER_TTL=60"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-011",
+    "title": "Synchronous commit and raft lock for ledger writer",
+    "service": "ledger-service",
+    "environment": "production",
+    "author": "DBA",
+    "date": "2024-07-04T23:50:00Z",
+    "config_changes": ["SYNCHRONOUS_COMMIT=remote_apply"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-012",
+    "title": "Add Dead Letter Queue to notification Kafka consumer",
+    "service": "notification-service",
+    "environment": "production",
+    "author": "Karan",
+    "date": "2024-08-28T08:55:00Z",
+    "config_changes": ["ENABLE_DLQ=true", "MAX_CONSUMER_RETRIES=3"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-013",
+    "title": "Refactor httpx client to app singleton lifecycle",
+    "service": "payout-service",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2024-09-14T14:20:00Z",
+    "config_changes": ["HTTP_POOL_MAX_SIZE=50"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-014",
+    "title": "Rollback upi-core build to #482",
+    "service": "upi-core",
+    "environment": "production",
+    "author": "Priya",
+    "date": "2024-10-02T17:40:00Z",
+    "config_changes": ["UPI_CORE_BUILD_ID=482"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-015",
+    "title": "Offload HMAC signature check to threadpool worker",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Rohan",
+    "date": "2024-10-18T10:48:00Z",
+    "config_changes": ["WORKER_THREAD_POOL_SIZE=16"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-016",
+    "title": "Pydantic ConfigMap schema validation on startup",
+    "service": "forex-service",
+    "environment": "production",
+    "author": "DevOps",
+    "date": "2024-11-05T15:48:00Z",
+    "config_changes": ["VALIDATE_CONFIG_SCHEMA_STRICT=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-017",
+    "title": "Add concurrent index on transactions table",
+    "service": "merchant-dashboard",
+    "environment": "production",
+    "author": "Suresh",
+    "date": "2024-11-20T21:10:00Z",
+    "config_changes": [],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-018",
+    "title": "Adjust circuit breaker failure threshold and sample window",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2024-12-01T08:18:00Z",
+    "config_changes": ["CIRCUIT_BREAKER_FAILURE_THRESHOLD=50", "CIRCUIT_BREAKER_MIN_SAMPLES=100"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2024-019",
+    "title": "Truncate log lines in FluentBit daemon",
+    "service": "audit-service",
+    "environment": "production",
+    "author": "Neha",
+    "date": "2024-12-12T12:45:00Z",
+    "config_changes": ["MAX_LOG_LINE_BYTES=65536"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-020",
+    "title": "Lower Razorpay connector retry timeout from 15s to 6s",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Priya",
+    "date": "2025-01-08T16:00:00Z",
+    "config_changes": ["RAZORPAY_RETRY_TIMEOUT_MS=6000"],
+    "outcome": "incident",
+    "incident_id": "INC-2025-001"
+  },
+  {
+    "id": "DEP-2025-021",
+    "title": "Set gateway retry timeout to 30s and mandate idempotency",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Priya",
+    "date": "2025-01-08T17:22:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=30000", "ENFORCE_IDEMPOTENCY_HEADER=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-022",
+    "title": "RabbitMQ dead-letter routing and auto-scaler policy",
+    "service": "refund-service",
+    "environment": "production",
+    "author": "Karan",
+    "date": "2025-01-22T19:48:00Z",
+    "config_changes": ["QUEUE_OVERFLOW_REJECT_DLQ=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-023",
+    "title": "Redlock with watchdog thread for settlement worker",
+    "service": "settlement-service",
+    "environment": "production",
+    "author": "Rohan",
+    "date": "2025-02-05T04:00:00Z",
+    "config_changes": ["REDLOCK_WATCHDOG_ENABLE=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-024",
+    "title": "Pydantic extra fields setting to ignore in responses",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Suresh",
+    "date": "2025-02-14T11:14:00Z",
+    "config_changes": ["RESPONSE_MODEL_EXTRA=ignore"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-025",
+    "title": "Local fallback mode and circuit breaker for fraud scoring API",
+    "service": "fraud-service",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2025-02-28T15:21:00Z",
+    "config_changes": ["FRAUD_SERVICE_FALLBACK_ENABLE=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-026",
+    "title": "Routine DB maintenance and re-index",
+    "service": "ledger-service",
+    "environment": "production",
+    "author": "DBA",
+    "date": "2025-03-01T01:00:00Z",
+    "config_changes": [],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-027",
+    "title": "Update merchant webhook retry backoff policy",
+    "service": "notification-service",
+    "environment": "production",
+    "author": "Karan",
+    "date": "2025-03-02T10:00:00Z",
+    "config_changes": ["WEBHOOK_MAX_RETRIES=5"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-028",
+    "title": "Upgrade FastAPI and Pydantic v2 dependencies",
+    "service": "auth-service",
+    "environment": "staging",
+    "author": "Neha",
+    "date": "2025-03-03T14:00:00Z",
+    "config_changes": [],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-029",
+    "title": "Enable HTTP2 keep-alive connections on gateway",
+    "service": "payments-gateway",
+    "environment": "staging",
+    "author": "Arjun",
+    "date": "2025-03-04T09:30:00Z",
+    "config_changes": ["HTTP2_ENABLE=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-030",
+    "title": "Bump UPI SDK version to 2.4.1",
+    "service": "upi-core",
+    "environment": "staging",
+    "author": "Priya",
+    "date": "2025-03-04T16:00:00Z",
+    "config_changes": ["UPI_SDK_VERSION=2.4.1"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-031",
+    "title": "Add Prometheus metrics exporter to payout service",
+    "service": "payout-service",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2025-03-05T08:20:00Z",
+    "config_changes": ["METRICS_PORT=9090"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-032",
+    "title": "Tune Aurora connection pool min/max boundaries",
+    "service": "merchant-dashboard",
+    "environment": "production",
+    "author": "Suresh",
+    "date": "2025-03-05T11:00:00Z",
+    "config_changes": ["DB_MIN_CONNECTIONS=10", "DB_MAX_CONNECTIONS=40"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-033",
+    "title": "Enable JSON log formatting for audit service",
+    "service": "audit-service",
+    "environment": "production",
+    "author": "Neha",
+    "date": "2025-03-06T13:10:00Z",
+    "config_changes": ["LOG_FORMAT=json"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-034",
+    "title": "Add caching layer for exchange rate requests",
+    "service": "forex-service",
+    "environment": "production",
+    "author": "DevOps",
+    "date": "2025-03-06T15:45:00Z",
+    "config_changes": ["CACHE_TTL_SECONDS=300"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-035",
+    "title": "Rotate JWT signing keys",
+    "service": "auth-service",
+    "environment": "production",
+    "author": "SecurityBot",
+    "date": "2025-03-07T02:00:00Z",
+    "config_changes": ["JWT_KEY_VERSION=v4"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-036",
+    "title": "Update settlement reconciliation batch cron schedule",
+    "service": "settlement-service",
+    "environment": "production",
+    "author": "Rohan",
+    "date": "2025-03-07T05:00:00Z",
+    "config_changes": ["CRON_SCHEDULE=0 2 * * *"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-037",
+    "title": "Optimize Redis memory footprint in gateway rate-limiter",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Suresh",
+    "date": "2025-03-07T09:15:00Z",
+    "config_changes": [],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-038",
+    "title": "Scale payout worker pod count from 4 to 8",
+    "service": "payout-service",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2025-03-07T11:30:00Z",
+    "config_changes": ["WORKER_REPLICAS=8"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-039",
+    "title": "Enable distributed tracing headers propagation",
+    "service": "upi-core",
+    "environment": "production",
+    "author": "Priya",
+    "date": "2025-03-07T14:00:00Z",
+    "config_changes": ["TRACING_ENABLED=true"],
+    "outcome": "clean"
+  },
+  {
+    "id": "DEP-2025-040",
+    "title": "Lower gateway retry timeout from 30s to 8s (Arjun Friday 5:40 PM PR)",
+    "service": "payments-gateway",
+    "environment": "production",
+    "author": "Arjun",
+    "date": "2025-03-07T17:40:00Z",
+    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=8000"],
+    "outcome": "degraded",
+    "notes": "Arjun PR under review by Foresight deploy-safety agent."
+  }
+]
