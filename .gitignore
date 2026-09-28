@@ -1,14 +1,19 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.env
-*.db
-dist/
-build/
-*.egg-info/
+# logs
+*.log
+
+# node
 node_modules/
 .next/
+dist/
+build/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.db
+*.egg-info/
+
+# screenshots & temporary verification
+verification/
+screenshots/
