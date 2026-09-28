@@ -6,7 +6,9 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2024-08-12T14:00:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=8000"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=8000"
+    ],
     "outcome": "incident",
     "incident_id": "INC-2024-001"
   },
@@ -17,7 +19,10 @@
     "environment": "production",
     "author": "Priya",
     "date": "2024-08-12T14:58:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=30000", "ENFORCE_IDEMPOTENCY_HEADER=true"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=30000",
+      "ENFORCE_IDEMPOTENCY_HEADER=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -27,7 +32,9 @@
     "environment": "staging",
     "author": "Arjun",
     "date": "2024-08-20T10:15:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=30000"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=30000"
+    ],
     "outcome": "clean"
   },
   {
@@ -37,7 +44,10 @@
     "environment": "production",
     "author": "DevOps",
     "date": "2024-09-03T18:00:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=8000", "CARD_RETRY_INTERVAL_MS=5000"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=8000",
+      "CARD_RETRY_INTERVAL_MS=5000"
+    ],
     "outcome": "incident",
     "incident_id": "INC-2024-002"
   },
@@ -48,7 +58,10 @@
     "environment": "production",
     "author": "Priya",
     "date": "2024-09-03T18:50:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=25000", "STRICT_IDEMPOTENCY_LOCK=true"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=25000",
+      "STRICT_IDEMPOTENCY_LOCK=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -58,7 +71,9 @@
     "environment": "production",
     "author": "Rohan",
     "date": "2024-03-15T02:00:00Z",
-    "config_changes": ["DB_POOL_SIZE=100"],
+    "config_changes": [
+      "DB_POOL_SIZE=100"
+    ],
     "outcome": "incident",
     "incident_id": "INC-2024-003"
   },
@@ -69,7 +84,10 @@
     "environment": "production",
     "author": "Rohan",
     "date": "2024-03-15T03:20:00Z",
-    "config_changes": ["DB_POOL_SIZE=50", "CHUNKED_TRANSACTIONS=true"],
+    "config_changes": [
+      "DB_POOL_SIZE=50",
+      "CHUNKED_TRANSACTIONS=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -79,7 +97,9 @@
     "environment": "production",
     "author": "SecurityBot",
     "date": "2024-04-10T09:25:00Z",
-    "config_changes": ["TLS_CERT_PATH=/etc/certs/2024-v2.crt"],
+    "config_changes": [
+      "TLS_CERT_PATH=/etc/certs/2024-v2.crt"
+    ],
     "outcome": "clean"
   },
   {
@@ -89,7 +109,9 @@
     "environment": "production",
     "author": "Neha",
     "date": "2024-05-18T12:45:00Z",
-    "config_changes": ["REDIS_EVICTION_POLICY=volatile-lru"],
+    "config_changes": [
+      "REDIS_EVICTION_POLICY=volatile-lru"
+    ],
     "outcome": "clean"
   },
   {
@@ -99,7 +121,10 @@
     "environment": "production",
     "author": "Suresh",
     "date": "2024-06-01T17:00:00Z",
-    "config_changes": ["RATE_LIMITER_BACKEND=redis", "RATE_LIMITER_TTL=60"],
+    "config_changes": [
+      "RATE_LIMITER_BACKEND=redis",
+      "RATE_LIMITER_TTL=60"
+    ],
     "outcome": "clean"
   },
   {
@@ -109,7 +134,9 @@
     "environment": "production",
     "author": "DBA",
     "date": "2024-07-04T23:50:00Z",
-    "config_changes": ["SYNCHRONOUS_COMMIT=remote_apply"],
+    "config_changes": [
+      "SYNCHRONOUS_COMMIT=remote_apply"
+    ],
     "outcome": "clean"
   },
   {
@@ -119,7 +146,10 @@
     "environment": "production",
     "author": "Karan",
     "date": "2024-08-28T08:55:00Z",
-    "config_changes": ["ENABLE_DLQ=true", "MAX_CONSUMER_RETRIES=3"],
+    "config_changes": [
+      "ENABLE_DLQ=true",
+      "MAX_CONSUMER_RETRIES=3"
+    ],
     "outcome": "clean"
   },
   {
@@ -129,7 +159,9 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2024-09-14T14:20:00Z",
-    "config_changes": ["HTTP_POOL_MAX_SIZE=50"],
+    "config_changes": [
+      "HTTP_POOL_MAX_SIZE=50"
+    ],
     "outcome": "clean"
   },
   {
@@ -139,7 +171,9 @@
     "environment": "production",
     "author": "Priya",
     "date": "2024-10-02T17:40:00Z",
-    "config_changes": ["UPI_CORE_BUILD_ID=482"],
+    "config_changes": [
+      "UPI_CORE_BUILD_ID=482"
+    ],
     "outcome": "clean"
   },
   {
@@ -149,7 +183,9 @@
     "environment": "production",
     "author": "Rohan",
     "date": "2024-10-18T10:48:00Z",
-    "config_changes": ["WORKER_THREAD_POOL_SIZE=16"],
+    "config_changes": [
+      "WORKER_THREAD_POOL_SIZE=16"
+    ],
     "outcome": "clean"
   },
   {
@@ -159,7 +195,9 @@
     "environment": "production",
     "author": "DevOps",
     "date": "2024-11-05T15:48:00Z",
-    "config_changes": ["VALIDATE_CONFIG_SCHEMA_STRICT=true"],
+    "config_changes": [
+      "VALIDATE_CONFIG_SCHEMA_STRICT=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -179,7 +217,10 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2024-12-01T08:18:00Z",
-    "config_changes": ["CIRCUIT_BREAKER_FAILURE_THRESHOLD=50", "CIRCUIT_BREAKER_MIN_SAMPLES=100"],
+    "config_changes": [
+      "CIRCUIT_BREAKER_FAILURE_THRESHOLD=50",
+      "CIRCUIT_BREAKER_MIN_SAMPLES=100"
+    ],
     "outcome": "clean"
   },
   {
@@ -189,7 +230,9 @@
     "environment": "production",
     "author": "Neha",
     "date": "2024-12-12T12:45:00Z",
-    "config_changes": ["MAX_LOG_LINE_BYTES=65536"],
+    "config_changes": [
+      "MAX_LOG_LINE_BYTES=65536"
+    ],
     "outcome": "clean"
   },
   {
@@ -199,7 +242,9 @@
     "environment": "production",
     "author": "Priya",
     "date": "2025-01-08T16:00:00Z",
-    "config_changes": ["RAZORPAY_RETRY_TIMEOUT_MS=6000"],
+    "config_changes": [
+      "RAZORPAY_RETRY_TIMEOUT_MS=6000"
+    ],
     "outcome": "incident",
     "incident_id": "INC-2025-001"
   },
@@ -210,7 +255,10 @@
     "environment": "production",
     "author": "Priya",
     "date": "2025-01-08T17:22:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=30000", "ENFORCE_IDEMPOTENCY_HEADER=true"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=30000",
+      "ENFORCE_IDEMPOTENCY_HEADER=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -220,7 +268,9 @@
     "environment": "production",
     "author": "Karan",
     "date": "2025-01-22T19:48:00Z",
-    "config_changes": ["QUEUE_OVERFLOW_REJECT_DLQ=true"],
+    "config_changes": [
+      "QUEUE_OVERFLOW_REJECT_DLQ=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -230,7 +280,9 @@
     "environment": "production",
     "author": "Rohan",
     "date": "2025-02-05T04:00:00Z",
-    "config_changes": ["REDLOCK_WATCHDOG_ENABLE=true"],
+    "config_changes": [
+      "REDLOCK_WATCHDOG_ENABLE=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -240,7 +292,9 @@
     "environment": "production",
     "author": "Suresh",
     "date": "2025-02-14T11:14:00Z",
-    "config_changes": ["RESPONSE_MODEL_EXTRA=ignore"],
+    "config_changes": [
+      "RESPONSE_MODEL_EXTRA=ignore"
+    ],
     "outcome": "clean"
   },
   {
@@ -250,7 +304,9 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2025-02-28T15:21:00Z",
-    "config_changes": ["FRAUD_SERVICE_FALLBACK_ENABLE=true"],
+    "config_changes": [
+      "FRAUD_SERVICE_FALLBACK_ENABLE=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -270,7 +326,9 @@
     "environment": "production",
     "author": "Karan",
     "date": "2025-03-02T10:00:00Z",
-    "config_changes": ["WEBHOOK_MAX_RETRIES=5"],
+    "config_changes": [
+      "WEBHOOK_MAX_RETRIES=5"
+    ],
     "outcome": "clean"
   },
   {
@@ -290,7 +348,9 @@
     "environment": "staging",
     "author": "Arjun",
     "date": "2025-03-04T09:30:00Z",
-    "config_changes": ["HTTP2_ENABLE=true"],
+    "config_changes": [
+      "HTTP2_ENABLE=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -300,7 +360,9 @@
     "environment": "staging",
     "author": "Priya",
     "date": "2025-03-04T16:00:00Z",
-    "config_changes": ["UPI_SDK_VERSION=2.4.1"],
+    "config_changes": [
+      "UPI_SDK_VERSION=2.4.1"
+    ],
     "outcome": "clean"
   },
   {
@@ -310,7 +372,9 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2025-03-05T08:20:00Z",
-    "config_changes": ["METRICS_PORT=9090"],
+    "config_changes": [
+      "METRICS_PORT=9090"
+    ],
     "outcome": "clean"
   },
   {
@@ -320,7 +384,10 @@
     "environment": "production",
     "author": "Suresh",
     "date": "2025-03-05T11:00:00Z",
-    "config_changes": ["DB_MIN_CONNECTIONS=10", "DB_MAX_CONNECTIONS=40"],
+    "config_changes": [
+      "DB_MIN_CONNECTIONS=10",
+      "DB_MAX_CONNECTIONS=40"
+    ],
     "outcome": "clean"
   },
   {
@@ -330,7 +397,9 @@
     "environment": "production",
     "author": "Neha",
     "date": "2025-03-06T13:10:00Z",
-    "config_changes": ["LOG_FORMAT=json"],
+    "config_changes": [
+      "LOG_FORMAT=json"
+    ],
     "outcome": "clean"
   },
   {
@@ -340,7 +409,9 @@
     "environment": "production",
     "author": "DevOps",
     "date": "2025-03-06T15:45:00Z",
-    "config_changes": ["CACHE_TTL_SECONDS=300"],
+    "config_changes": [
+      "CACHE_TTL_SECONDS=300"
+    ],
     "outcome": "clean"
   },
   {
@@ -350,7 +421,9 @@
     "environment": "production",
     "author": "SecurityBot",
     "date": "2025-03-07T02:00:00Z",
-    "config_changes": ["JWT_KEY_VERSION=v4"],
+    "config_changes": [
+      "JWT_KEY_VERSION=v4"
+    ],
     "outcome": "clean"
   },
   {
@@ -360,7 +433,9 @@
     "environment": "production",
     "author": "Rohan",
     "date": "2025-03-07T05:00:00Z",
-    "config_changes": ["CRON_SCHEDULE=0 2 * * *"],
+    "config_changes": [
+      "CRON_SCHEDULE=0 2 * * *"
+    ],
     "outcome": "clean"
   },
   {
@@ -380,7 +455,9 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2025-03-07T11:30:00Z",
-    "config_changes": ["WORKER_REPLICAS=8"],
+    "config_changes": [
+      "WORKER_REPLICAS=8"
+    ],
     "outcome": "clean"
   },
   {
@@ -390,7 +467,9 @@
     "environment": "production",
     "author": "Priya",
     "date": "2025-03-07T14:00:00Z",
-    "config_changes": ["TRACING_ENABLED=true"],
+    "config_changes": [
+      "TRACING_ENABLED=true"
+    ],
     "outcome": "clean"
   },
   {
@@ -400,7 +479,9 @@
     "environment": "production",
     "author": "Arjun",
     "date": "2025-03-07T17:40:00Z",
-    "config_changes": ["GATEWAY_RETRY_TIMEOUT_MS=8000"],
+    "config_changes": [
+      "GATEWAY_RETRY_TIMEOUT_MS=8000"
+    ],
     "outcome": "degraded",
     "notes": "Arjun PR under review by Foresight deploy-safety agent."
   }

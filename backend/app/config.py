@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     FORESIGHT_MODE: str = "offline"  # live | offline
     PORT: int = 8000
     API_KEY: str = "foresight-secret-key-123"
+    DATABASE_URL: str = "sqlite:///./foresight.db"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     GROQ_API_KEY: str | None = None

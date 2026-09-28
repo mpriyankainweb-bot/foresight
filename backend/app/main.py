@@ -1,10 +1,22 @@
+from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.app.config import settings
+from backend.app.db import init_db
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
+from backend.app.routers.analytics import router as analytics_router
+from backend.app.routers.demo import router as demo_router
+from backend.app.routers.deploys import router as deploys_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
 
 app = FastAPI(
     title="Foresight API",
@@ -12,6 +24,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # CORS setup
@@ -27,6 +40,7 @@ app.add_middleware(
 memory_service = MemoryService()
 llm_client = LLMClient()
 
+
 def verify_api_key(x_api_key: str | None = Header(None)):
     if settings.API_KEY and x_api_key != settings.API_KEY:
         raise HTTPException(
@@ -34,6 +48,7 @@ def verify_api_key(x_api_key: str | None = Header(None)):
             detail={"error": {"code": "UNAUTHORIZED", "message": "Invalid or missing X-API-Key header"}},
         )
     return x_api_key
+
 
 @app.get("/health")
 def health_check():
@@ -44,6 +59,15 @@ def health_check():
         "llm_backend": "groq" if llm_client.is_live() else "mock",
         "version": "0.1.0",
     }
+
+
+# Demo routes (unprotected per SPEC)
+app.include_router(demo_router)
+
+# Protected API routes
+app.include_router(deploys_router, dependencies=[Depends(verify_api_key)])
+app.include_router(analytics_router, dependencies=[Depends(verify_api_key)])
+
 
 @app.get("/api/v1/memory/search", dependencies=[Depends(verify_api_key)])
 def search_memory(q: str = Query(..., min_length=1, description="Search query string")):
@@ -60,6 +84,7 @@ def search_memory(q: str = Query(..., min_length=1, description="Search query st
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": {"code": "MEMORY_SEARCH_ERROR", "message": str(e)}},
         )
+
 
 @app.exception_handler(HTTPException)
 def custom_http_exception_handler(request, exc: HTTPException):
