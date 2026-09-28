@@ -1,3 +1,4 @@
+
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -5,24 +6,6 @@ from fastapi.responses import JSONResponse
 from backend.app.config import settings
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
-
-app = FastAPI(
-    title="Foresight API",
-    description="AI deploy-safety agent backend for fintech engineering teams",
-    version="0.1.0",
-    docs_url="/docs",
-    openapi_url="/openapi.json",
-)
-
-# CORS setup
-origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins if origins else ["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 memory_service = MemoryService()
 llm_client = LLMClient()
@@ -34,6 +17,33 @@ def verify_api_key(x_api_key: str | None = Header(None)):
             detail={"error": {"code": "UNAUTHORIZED", "message": "Invalid or missing X-API-Key header"}},
         )
     return x_api_key
+
+app = FastAPI(
+    title="Foresight API",
+    description="AI deploy-safety agent backend for fintech engineering teams",
+    version="0.1.0",
+    docs_url="/docs",
+    openapi_url="/openapi.json",
+)
+
+origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins if origins else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+from backend.app.routers.demo_analytics import (
+    analytics_router,
+    demo_router,
+)
+from backend.app.routers.deploys import router as deploys_router
+
+app.include_router(deploys_router)
+app.include_router(demo_router)
+app.include_router(analytics_router)
 
 @app.get("/health")
 def health_check():
