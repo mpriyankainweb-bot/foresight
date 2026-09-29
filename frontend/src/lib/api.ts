@@ -3,14 +3,9 @@ export const getApiBaseUrl = (): string => {
     if (process.env.NEXT_PUBLIC_API_BASE_URL) {
       return process.env.NEXT_PUBLIC_API_BASE_URL;
     }
-    // In Codespaces or browser runtime, fallback to port 8000 on current hostname
-    const host = window.location.hostname;
-    const protocol = window.location.protocol;
-    if (host.includes('app.github.dev')) {
-      const backendHost = host.replace(/-3000\./, '-8000.').replace(/-3000-/, '-8000-');
-      return `${protocol}//${backendHost}`;
-    }
-    return `${protocol}//${host}:8000`;
+    // Use Next.js server proxy rewrite to route all requests internally to backend on 127.0.0.1:8000
+    // This completely bypasses browser cross-origin/CORS & port visibility issues in Codespaces!
+    return '';
   }
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 };
