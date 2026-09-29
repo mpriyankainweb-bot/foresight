@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: foresight-deploy-safety
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: FORESIGHT_MODE
+        value: offline
+      - key: GROQ_API_KEY
+        sync: false
+      - key: HINDSIGHT_API_KEY
+        sync: false
+      - key: HINDSIGHT_BASE_URL
+        value: https://api.hindsight.vectorize.io/
+      - key: HINDSIGHT_BANK_ID
+        value: hackathon-memory
+      - key: API_KEY
+        generateValue: true

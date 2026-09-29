@@ -114,7 +114,14 @@ class MemoryService:
                 if loop and loop.is_running():
                     with concurrent.futures.ThreadPoolExecutor() as pool:
                         def _do_async_recall():
-                            return asyncio.run(self.client.arecall(bank_id=self.bank_id, query=query, tags=tags))
+                            new_loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(new_loop)
+                            try:
+                                return new_loop.run_until_complete(
+                                    self.client.arecall(bank_id=self.bank_id, query=query, tags=tags)
+                                )
+                            finally:
+                                new_loop.close()
                         resp = pool.submit(_do_async_recall).result(timeout=10.0)
                 else:
                     resp = self.client.recall(bank_id=self.bank_id, query=query, tags=tags)
