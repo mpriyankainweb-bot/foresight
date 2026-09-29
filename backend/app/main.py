@@ -80,6 +80,10 @@ def verify_api_key(
 
 @app.get("/")
 def root():
+    static_frontend_dir = Path(__file__).parent.parent.parent / "frontend" / "out"
+    index_file = static_frontend_dir / "index.html"
+    if index_file.is_file():
+        return FileResponse(index_file)
     return {
         "message": "Foresight Deploy Safety API is running",
         "docs_url": "/docs",

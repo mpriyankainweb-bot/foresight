@@ -7,7 +7,7 @@ services:
     region: oregon
     envVars:
       - key: FORESIGHT_MODE
-        value: live
+        value: offline
       - key: GROQ_API_KEY
         sync: false
       - key: HINDSIGHT_API_KEY
