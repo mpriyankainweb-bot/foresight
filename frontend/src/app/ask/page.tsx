@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
-import { MemoryCitationItem } from '../../lib/api';
+import { MemoryCitationItem, getApiBaseUrl, getApiKey } from '../../lib/api';
 import {
   Send,
   Bot,
@@ -16,9 +16,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'foresight-secret-key-123';
 
 interface Message {
   id: string;
@@ -120,18 +117,29 @@ export default function AskPage() {
     setIsGenerating(true);
 
     try {
-      const apiKey = typeof window !== 'undefined' ? (localStorage.getItem('foresight_api_key') || API_KEY) : API_KEY;
-      const response = await fetch(`${API_BASE_URL}/api/v1/ask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
-        },
-        body: JSON.stringify({ question }),
-      });
+      const baseUrl = getApiBaseUrl();
+      const apiKey = getApiKey();
+      let response: Response;
+      try {
+        response = await fetch(`${baseUrl}/api/v1/ask`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': apiKey,
+          },
+          body: JSON.stringify({ question }),
+        });
+      } catch (err) {
+        throw new Error('Unable to connect to backend server. Please verify the Foresight FastAPI backend is running on port 8000.');
+      }
 
       if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
+        let errDetails = `API returned ${response.status}`;
+        try {
+          const errJson = await response.json();
+          if (errJson?.error?.message) errDetails = errJson.error.message;
+        } catch {}
+        throw new Error(errDetails);
       }
 
       const reader = response.body?.getReader();
