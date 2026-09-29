@@ -11,8 +11,18 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: FORESIGHT_MODE
-        value: offline
+        value: live
       - key: API_KEY
         value: foresight-secret-key-123
+      - key: HINDSIGHT_API_KEY
+        sync: false
+      - key: HINDSIGHT_API_URL
+        value: https://api.hindsight.vectorize.io
       - key: HINDSIGHT_BANK_ID
         value: foresight-paynest
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_PRIMARY_MODEL
+        value: openai/gpt-oss-120b
+      - key: GROQ_FALLBACK_MODEL
+        value: openai/gpt-oss-20b

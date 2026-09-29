@@ -14,12 +14,12 @@ COPY backend ./backend
 COPY data ./data
 
 # Install Python dependencies and package
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e '.[live]'
 
 EXPOSE 8000
 
 ENV PYTHONUNBUFFERED=1
-ENV FORESIGHT_MODE=offline
+ENV FORESIGHT_MODE=live
 ENV PORT=8000
 
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

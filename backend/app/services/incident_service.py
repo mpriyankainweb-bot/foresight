@@ -133,7 +133,10 @@ class IncidentService:
             )
             raw_data = llm_result.model_dump()
         except Exception as e:
-            logger.warning(f"LLM incident check failed ({e}), using fallback fix suggestions.")
+            if self.llm_client.is_live():
+                logger.error("Live Groq incident analysis failed: %s", e)
+                raise
+            logger.warning("Offline incident analysis using deterministic fallback: %s", e)
             raw_data = fallback_dict
 
         suggestions = [

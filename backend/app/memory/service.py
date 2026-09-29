@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,13 @@ from backend.app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def _safe_hindsight_error(exc: BaseException, api_key: str | None) -> str:
+    message = str(exc).strip() or type(exc).__name__
+    if api_key:
+        message = message.replace(api_key, "[REDACTED]")
+    return message[:1000]
+
+
 class MemoryService:
     def __init__(self):
         self.mode = settings.FORESIGHT_MODE
@@ -20,18 +28,32 @@ class MemoryService:
         self.api_key = settings.HINDSIGHT_API_KEY
         self.api_url = settings.HINDSIGHT_API_URL
         self._mock_memories: list[dict[str, Any]] = []
+        self.initialization_error: str | None = None
 
         if self.is_live():
             if Hindsight is None:
                 raise RuntimeError("Live mode requires the Hindsight SDK; install foresight with the 'live' extra")
-            self.client = Hindsight(api_key=self.api_key, base_url=self.api_url)
-            self._init_live_bank()
+            try:
+                self.client = Hindsight(api_key=self.api_key, base_url=self.api_url, timeout=30.0)
+            except Exception as exc:  # noqa: BLE001 - SDK construction errors are provider/configuration failures.
+                self.client = None
+                self.initialization_error = _safe_hindsight_error(exc, self.api_key)
+                logger.error("Hindsight client initialization failed: %s", self.initialization_error)
+            else:
+                self._init_live_bank()
         else:
             self.client = None
             self._init_mock_bank()
 
     def is_live(self) -> bool:
-        return self.mode == "live" and bool(self.api_key)
+        return self.mode == "live" and bool(self.api_key and self.api_key.strip())
+
+    def _bank_already_exists(self, exc: BaseException) -> bool:
+        status_code = getattr(exc, "status_code", None)
+        if status_code is None:
+            status_code = getattr(getattr(exc, "response", None), "status_code", None)
+        message = str(exc).lower()
+        return status_code == 409 or "already exists" in message or "bank exists" in message
 
     def _init_live_bank(self):
         try:
@@ -44,8 +66,16 @@ class MemoryService:
                 reflect_mission="Produce cautious, evidence-driven risk briefs citing past incidents and temporary fixes.",
             )
             logger.info(f"Initialized live Hindsight bank: {self.bank_id}")
-        except Exception as e:
-            logger.info(f"Hindsight bank creation note (may already exist): {e}")
+        except Exception as e:  # noqa: BLE001 - SDK errors differ across auth, conflict, and network failures.
+            if self._bank_already_exists(e):
+                logger.info("Hindsight bank already exists | bank_id=%s", self.bank_id)
+                return
+            self.initialization_error = _safe_hindsight_error(e, self.api_key)
+            logger.error(
+                "Hindsight bank initialization failed | bank_id=%s | error=%s",
+                self.bank_id,
+                self.initialization_error,
+            )
 
     def _init_mock_bank(self):
         seed_path = Path(__file__).parent.parent.parent.parent / "data" / "seed" / "incidents.json"
@@ -83,8 +113,20 @@ class MemoryService:
                     tags=tags,
                     metadata=metadata,
                 )
-            except Exception as e:
-                logger.error(f"Hindsight retain error: {e}")
+            except Exception as e:  # noqa: BLE001 - surface every Hindsight retain failure.
+                detail = _safe_hindsight_error(e, self.api_key)
+                logger.error(
+                    "Hindsight retain failed | bank_id=%s | document_id=%s | error=%s",
+                    self.bank_id,
+                    document_id,
+                    detail,
+                )
+                raise RuntimeError(f"Hindsight retain failed for bank '{self.bank_id}': {detail}") from None
+            logger.info(
+                "Hindsight retain succeeded | bank_id=%s | document_id=%s",
+                self.bank_id,
+                document_id,
+            )
             return {"status": "success", "backend": "hindsight", "document_id": document_id}
         else:
             mem_id = document_id or f"mock-mem-{len(self._mock_memories) + 1}"
@@ -107,6 +149,7 @@ class MemoryService:
 
     def recall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
         if self.is_live():
+            started_at = time.monotonic()
             try:
                 import asyncio
                 import concurrent.futures
@@ -120,7 +163,7 @@ class MemoryService:
                     with concurrent.futures.ThreadPoolExecutor() as pool:
                         def _do_async_recall():
                             return asyncio.run(self.client.arecall(bank_id=self.bank_id, query=query, tags=tags))
-                        resp = pool.submit(_do_async_recall).result(timeout=10.0)
+                        resp = pool.submit(_do_async_recall).result(timeout=35.0)
                 else:
                     resp = self.client.recall(bank_id=self.bank_id, query=query, tags=tags)
 
@@ -133,10 +176,21 @@ class MemoryService:
                         "tags": getattr(item, "tags", []),
                         "metadata": getattr(item, "metadata", {}),
                     })
+                logger.info(
+                    "Hindsight recall succeeded | bank_id=%s | result_count=%d | latency_ms=%.1f",
+                    self.bank_id,
+                    len(results[:limit]),
+                    (time.monotonic() - started_at) * 1000,
+                )
                 return results[:limit]
-            except Exception as e:
-                logger.error(f"Error during Hindsight recall: {e}")
-                return []
+            except Exception as e:  # noqa: BLE001 - surface every Hindsight recall failure.
+                detail = _safe_hindsight_error(e, self.api_key)
+                logger.error(
+                    "Hindsight recall failed | bank_id=%s | error=%s",
+                    self.bank_id,
+                    detail,
+                )
+                raise RuntimeError(f"Hindsight recall failed for bank '{self.bank_id}': {detail}") from None
         else:
             query_lower = query.lower()
             query_terms = [t for t in query_lower.split() if len(t) > 2]

@@ -3,7 +3,7 @@
 [![Deployment Status](https://img.shields.io/badge/Deploy-Live%20on%20Render-200052?style=for-the-badge&logo=render&logoColor=white)](https://foresight-05ok.onrender.com)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Next.js 14](https://img.shields.io/badge/Next.js-14%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![Hindsight Memory](https://img.shields.io/badge/Memory-Hindsight%20Cloud-7C5CFF?style=for-the-badge)](https://hindsight.vectorize.io/)
 
 > **Tagline:** *Hindsight remembers. Foresight prevents.*
@@ -42,7 +42,7 @@ With **Hindsight memory**, Foresight evaluates risk with exact historical preced
 ```mermaid
 graph TD
     subgraph Clients & Integrations
-        A[Next.js 14 Frontend UI]
+        A[Next.js 15 Frontend UI]
         B[Foresight CLI]
         C[GitHub Action PR Guard]
     end
@@ -56,7 +56,7 @@ graph TD
 
     subgraph Memory & Reasoning
         H[(Hindsight Cloud Bank)]
-        I[Groq API: GPT-OSS-120B / Qwen3-32B]
+        I[Groq API: GPT-OSS-120B / GPT-OSS-20B]
     end
 
     A -->|HTTP / JSON| D
@@ -75,10 +75,10 @@ graph TD
 
 ### Tech Stack Breakdown
 - **Backend Framework:** Python 3.11+, FastAPI, Pydantic v2, SQLModel (SQLite structured persistence), `httpx`, `tenacity`.
-- **Memory Infrastructure:** [Hindsight Cloud](https://hindsight.vectorize.io/) via the official Python SDK (`hindsight-all`).
-- **LLM Reasoning Engine:** Groq API featuring `openai/gpt-oss-120b` (Primary) and `qwen/qwen3-32b` (Fallback) with strict JSON schema validation.
-- **Frontend Stack:** Next.js 14 (App Router), TypeScript, Tailwind CSS, TanStack Query, Framer Motion, Recharts, Lucide Icons.
-- **Deployment Platform:** Render (Single-service Docker blueprint serving Next.js static export + FastAPI backend).
+- **Memory Infrastructure:** [Hindsight Cloud](https://hindsight.vectorize.io/) via the official Python SDK (`hindsight-client`, installed for live deployments).
+- **LLM Reasoning Engine:** Groq API featuring `openai/gpt-oss-120b` (Primary) and `openai/gpt-oss-20b` (Fallback) with strict JSON schema validation.
+- **Frontend Stack:** Next.js 15 (App Router), TypeScript, Tailwind CSS, TanStack Query, Framer Motion, Recharts, Lucide Icons.
+- **Deployment Platform:** Render single-service Docker Blueprint running the Next.js standalone frontend and FastAPI backend.
 
 ---
 
@@ -218,11 +218,26 @@ docker compose up --build
 - **Frontend UI:** `http://localhost:3000`
 - **Backend API:** `http://localhost:8000`
 
-### Render Blueprint Deployment
-This repository includes a `render.yaml` Blueprint designed for single-service container deployment on Render:
-1. Create a new **Blueprint** on Render pointing to this repository.
-2. Render builds the static frontend export (`NEXT_OUTPUT=export`) and serves it alongside the FastAPI server on `$PORT`.
-3. The deployed web service runs live at [https://foresight-05ok.onrender.com](https://foresight-05ok.onrender.com).
+### Live deployment on Render
+The root `render.yaml` deploys the Next.js frontend and FastAPI backend together as one Docker web service. Production uses `FORESIGHT_MODE=live`, installs the optional Hindsight SDK, and proxies `/health` and `/api/*` to the local FastAPI process. In the Render service's **Environment** tab, set these exact names (case-sensitive):
+
+| Variable | Value |
+| --- | --- |
+| `FORESIGHT_MODE` | `live` |
+| `HINDSIGHT_API_KEY` | Active Hindsight Cloud API key (secret) |
+| `HINDSIGHT_API_URL` | `https://api.hindsight.vectorize.io` |
+| `HINDSIGHT_BANK_ID` | The bank containing the incident data; defaults to `foresight-paynest` |
+| `GROQ_API_KEY` | Active Groq API key (secret) |
+| `GROQ_PRIMARY_MODEL` | `openai/gpt-oss-120b` |
+| `GROQ_FALLBACK_MODEL` | `openai/gpt-oss-20b` |
+
+`HINDSIGHT_BASE_URL` is accepted as a legacy alias for `HINDSIGHT_API_URL`; prefer the latter and do not set conflicting URLs. `API_KEY` is the Foresight API's separate request-auth key, not either provider key.
+
+If the frontend is deployed separately, its build environment needs `NEXT_PUBLIC_API_BASE_URL=https://<backend-service-host>` and (if the backend `API_KEY` differs from the public default) `NEXT_PUBLIC_API_KEY` equal to that request-auth key. These `NEXT_PUBLIC_*` values are bundled into browser code and are not provider secrets. Groq and Hindsight credentials belong only in the backend service environment.
+
+The Render Blueprint declares the two provider keys with `sync: false`; enter them as secrets in the Render Environment tab rather than committing them. The health response reports which providers are configured and names missing keys without exposing values. Live provider request failures are returned/logged explicitly; deterministic seed data is used only for offline mode or when live credentials are genuinely absent.
+
+The Blueprint uses Render's free service plan. Free services can sleep when idle, and the container filesystem is ephemeral, so SQLite/demo state may reset after a restart or redeploy. `data/seed/` contains synthetic example records; do not use those as production incident history.
 
 ---
 

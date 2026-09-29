@@ -226,7 +226,10 @@ class DeployService:
             )
             raw_data = llm_result.model_dump()
         except Exception as e:
-            logger.warning(f"LLM check failed ({e}), using deterministic fallback brief.")
+            if self.llm_client.is_live():
+                logger.error("Live Groq deploy analysis failed: %s", e)
+                raise
+            logger.warning("Offline deploy analysis using deterministic fallback: %s", e)
             raw_data = fallback_dict
 
         risk_score = max(0, min(100, int(raw_data.get("risk_score", 50))))

@@ -12,8 +12,8 @@ A Memory OFF / ON toggle re-runs the same check without memory (generic answer) 
 3. Tech stack (do not substitute)
 Backend: Python 3.11, FastAPI, Pydantic v2, SQLModel with SQLite (structured records only), httpx, tenacity for retries, pytest.
 Memory: Hindsight (Hindsight Cloud) via the official Python SDK. Verify the exact package name, client class, and method signatures against https://hindsight.vectorize.io/ and https://github.com/vectorize-io/hindsight before coding. Do not guess the API. If the SDK differs from this spec, follow the docs and note it in the README.
-LLM: Groq API, primary model openai/gpt-oss-120b, fallback qwen/qwen3-32b. Wrap all calls in a resilient client (see section 6).
-Frontend: Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui, Framer Motion, Recharts, Lucide icons, TanStack Query.
+LLM: Groq API, primary model openai/gpt-oss-120b, fallback openai/gpt-oss-20b. Wrap all calls in a resilient client (see section 6).
+Frontend: Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui, Framer Motion, Recharts, Lucide icons, TanStack Query.
 Integrations: REST API with API-key auth, a CLI (foresight check), a GitHub Action, and an optional Slack webhook.
 Deploy targets: Vercel for the frontend, Render or Railway for the backend, plus a docker-compose.yml for local runs.
 4. Hindsight memory design (the star of the project)

@@ -17,6 +17,7 @@ export function MemoryInspectorDrawer() {
   const [query, setQuery] = useState(inspectorSearchQuery);
   const [results, setResults] = useState<MemorySearchResultItem[]>([]);
   const [backendMode, setBackendMode] = useState<string>('mock');
+  const [bankId, setBankId] = useState<string>('offline-demo');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,7 @@ export function MemoryInspectorDrawer() {
       const res = await api.searchMemory(searchStr);
       setResults(res.results || []);
       setBackendMode(res.memory_backend || 'mock');
+      setBankId(res.bank_id || 'offline-demo');
     } catch (err: any) {
       setError(err.message || 'Failed to query memory bank');
     } finally {
@@ -73,11 +75,11 @@ export function MemoryInspectorDrawer() {
                   <h2 className="text-lg font-bold text-[#E6E8EE] flex items-center gap-2">
                     Memory Inspector
                     <span className="text-xs px-2 py-0.5 rounded-full bg-[#1F2430] text-[#8A90A2] font-mono">
-                      bank: foresight-paynest
+                      bank: {bankId}
                     </span>
                   </h2>
                   <p className="text-xs text-[#8A90A2]">
-                    Inspect live Hindsight memories recalled for deploys & incidents
+                    Inspect recalled memories from the configured backend
                   </p>
                 </div>
               </div>

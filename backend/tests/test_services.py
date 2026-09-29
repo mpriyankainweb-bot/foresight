@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
+from backend.app import main as main_module
 from backend.app.config import settings
 from backend.app.llm.client import LLMClient
 from backend.app.main import app
@@ -20,6 +21,22 @@ def test_health_check():
     assert "mode" in data
     assert "memory_backend" in data
 
+def test_health_reports_missing_provider_keys(monkeypatch):
+    monkeypatch.setattr(settings, "FORESIGHT_MODE", "live")
+    monkeypatch.setattr(main_module.memory_service, "mode", "live")
+    monkeypatch.setattr(main_module.memory_service, "api_key", None)
+    monkeypatch.setattr(main_module.memory_service, "initialization_error", None)
+    monkeypatch.setattr(main_module.llm_client, "mode", "live")
+    monkeypatch.setattr(main_module.llm_client, "api_key", None)
+
+    response = client.get("/health")
+    data = response.json()
+    assert data["status"] == "degraded"
+    assert data["memory_backend"] == "mock"
+    assert data["llm_backend"] == "mock"
+    assert any("HINDSIGHT_API_KEY" in warning for warning in data["warnings"])
+    assert any("GROQ_API_KEY" in warning for warning in data["warnings"])
+
 def test_memory_search_unauthorized():
     response = client.get("/api/v1/memory/search?q=retry")
     assert response.status_code == 401
@@ -31,6 +48,8 @@ def test_memory_search_authorized():
     data = response.json()
     assert "results" in data
     assert len(data["results"]) > 0
+    assert data["bank_id"] == "offline-demo"
+    assert data["results"][0]["content"]
 
 def test_llm_client_offline_fallback():
     llm = LLMClient()

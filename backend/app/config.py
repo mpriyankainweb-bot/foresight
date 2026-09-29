@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
@@ -13,17 +15,18 @@ class Settings(BaseSettings):
 
     GROQ_API_KEY: str | None = None
     GROQ_PRIMARY_MODEL: str = "openai/gpt-oss-120b"
-    GROQ_FALLBACK_MODEL: str = "qwen/qwen3-32b"
+    GROQ_FALLBACK_MODEL: str = "openai/gpt-oss-20b"
 
     HINDSIGHT_API_KEY: str | None = None
     HINDSIGHT_API_URL: str = "https://api.hindsight.vectorize.io"
     HINDSIGHT_BASE_URL: str | None = None
     HINDSIGHT_BANK_ID: str = "foresight-paynest"
 
-    def model_post_init(self, __context):
-        if self.HINDSIGHT_BASE_URL and not self.HINDSIGHT_API_URL:
-            self.HINDSIGHT_API_URL = self.HINDSIGHT_BASE_URL
-        elif self.HINDSIGHT_BASE_URL and self.HINDSIGHT_API_URL == "https://api.hindsight.vectorize.io":
+    def model_post_init(self, __context: Any, /) -> None:
+        if self.HINDSIGHT_BASE_URL and (
+            not self.HINDSIGHT_API_URL
+            or self.HINDSIGHT_API_URL == "https://api.hindsight.vectorize.io"
+        ):
             self.HINDSIGHT_API_URL = self.HINDSIGHT_BASE_URL
 
 settings = Settings()

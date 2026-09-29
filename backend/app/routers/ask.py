@@ -1,6 +1,8 @@
 import asyncio
 import json
-from fastapi import APIRouter, HTTPException, status
+import logging
+
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from backend.app.llm.client import LLMClient
@@ -8,6 +10,7 @@ from backend.app.memory.service import MemoryService
 from backend.app.models import AskRequest
 
 router = APIRouter(prefix="/api/v1", tags=["ask"])
+logger = logging.getLogger(__name__)
 
 memory_service = MemoryService()
 llm_client = LLMClient()
@@ -17,7 +20,7 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
     """
     Synthesize an answer using LLM reasoning over recalled Hindsight memories.
     """
-    if not memories:
+    if not memories and not llm_client.is_live():
         return (
             f"Foresight evaluated your query ('{question}') against PayNest's incident memory bank. "
             f"No direct historical incident matched this specific prompt. Always follow standard deploy safety: "
@@ -28,7 +31,8 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
     system_prompt = (
         "You are Foresight, an AI deploy-safety agent for PayNest fintech platform. "
         "Answer the user's question directly and informatively using the provided recalled Hindsight incident memories. "
-        "Provide a clear, structured, markdown-formatted response detailing what happened, root causes, services affected, and preventative safety steps."
+        "Provide a clear, structured, markdown-formatted response detailing what happened, root causes, services affected, and preventative safety steps. "
+        "If no memories were recalled, state that clearly and do not invent incident facts."
     )
 
     mem_context = "\n".join(
@@ -40,27 +44,20 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
 
     prompt = f"USER QUESTION: {question}\n\nRECALLED HINDSIGHT MEMORIES:\n{mem_context}\n\nPlease synthesize a clear, comprehensive answer for the user based on these recalled memories:"
 
-    # Use LLM client for synthesis
-    try:
-        if llm_client.is_live():
-            raw_response = llm_client._call_groq(
-                model=llm_client.primary_model,
-                prompt=prompt,
-                system_prompt=system_prompt,
-            )
-            if raw_response and len(raw_response.strip()) > 10:
-                text = raw_response.strip()
-                if text.startswith("{") and text.endswith("}"):
-                    try:
-                        parsed = json.loads(text)
-                        for k in ["answer", "summary", "response", "message"]:
-                            if k in parsed and isinstance(parsed[k], str):
-                                return parsed[k].strip()
-                    except Exception:
-                        pass
-                return text
-    except Exception as e:
-        pass
+    if llm_client.is_live():
+        raw_response = llm_client.generate_text(prompt=prompt, system_prompt=system_prompt)
+        if not raw_response or len(raw_response.strip()) <= 10:
+            raise RuntimeError("Groq returned an empty or unexpectedly short answer")
+        text = raw_response.strip()
+        if text.startswith("{") and text.endswith("}"):
+            try:
+                parsed = json.loads(text)
+                for key in ["answer", "summary", "response", "message"]:
+                    if key in parsed and isinstance(parsed[key], str):
+                        return parsed[key].strip()
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return text
 
     # Deterministic synthesis over recalled memories if offline or fallback
     insights = []
@@ -79,7 +76,12 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
 
 async def generate_ask_stream(question: str):
     # 1. Recall relevant memories from Hindsight
-    memories = memory_service.recall(query=question, limit=5)
+    try:
+        memories = memory_service.recall(query=question, limit=5)
+    except Exception as exc:  # noqa: BLE001 - provider SDK/network errors vary by failure mode.
+        logger.error("Ask Foresight memory recall failed: %s", exc)
+        yield json.dumps({"type": "error", "code": "HINDSIGHT_RECALL_FAILED", "message": str(exc)}) + "\n"
+        return
 
     citations = [
         {
@@ -95,7 +97,12 @@ async def generate_ask_stream(question: str):
     yield json.dumps({"type": "citations", "citations": citations}) + "\n"
 
     # 2. Synthesize answer using Hindsight recall + LLM reasoning
-    answer = synthesize_answer_from_memories(question, memories)
+    try:
+        answer = synthesize_answer_from_memories(question, memories)
+    except Exception as exc:  # noqa: BLE001 - provider SDK/network errors vary by failure mode.
+        logger.error("Ask Foresight answer synthesis failed: %s", exc)
+        yield json.dumps({"type": "error", "code": "GROQ_GENERATION_FAILED", "message": str(exc)}) + "\n"
+        return
 
     # 3. Stream text chunks
     words = answer.split(" ")
@@ -111,13 +118,7 @@ async def generate_ask_stream(question: str):
 
 @router.post("/ask")
 async def ask_foresight(request: AskRequest):
-    try:
-        return StreamingResponse(
-            generate_ask_stream(request.question),
-            media_type="application/x-ndjson",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": {"code": "ASK_ERROR", "message": str(e)}},
-        )
+    return StreamingResponse(
+        generate_ask_stream(request.question),
+        media_type="application/x-ndjson",
+    )

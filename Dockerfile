@@ -14,7 +14,7 @@ COPY pyproject.toml README.md ./
 COPY backend ./backend
 COPY data ./data
 RUN python3 -m venv /opt/foresight-venv \
-    && /opt/foresight-venv/bin/pip install --no-cache-dir .
+    && /opt/foresight-venv/bin/pip install --no-cache-dir '.[live]'
 
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
@@ -32,7 +32,7 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     HOSTNAME=0.0.0.0 \
     PORT=10000 \
-    FORESIGHT_MODE=offline \
+    FORESIGHT_MODE=live \
     PYTHONUNBUFFERED=1 \
     PATH=/opt/foresight-venv/bin:$PATH
 

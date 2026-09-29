@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
@@ -17,6 +18,8 @@ from backend.app.routers.demo import router as demo_router
 from backend.app.routers.deploys import router as deploys_router
 from backend.app.routers.incidents import router as incidents_router
 from backend.app.routers.keys import router as keys_router
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -50,7 +53,7 @@ llm_client = LLMClient()
 
 def verify_api_key(
     x_api_key: str | None = Header(None),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session),  # noqa: B008 - FastAPI dependency injection.
 ):
     if not x_api_key:
         raise HTTPException(
@@ -89,11 +92,21 @@ def root():
 
 @app.get("/health")
 def health_check():
+    warnings = []
+    if settings.FORESIGHT_MODE == "live":
+        if not memory_service.is_live():
+            warnings.append("HINDSIGHT_API_KEY is missing; memory is using the offline seed bank")
+        if memory_service.initialization_error:
+            warnings.append(f"Hindsight bank initialization failed: {memory_service.initialization_error}")
+        if not llm_client.is_live():
+            warnings.append("GROQ_API_KEY is missing; LLM is using the offline fallback")
     return {
-        "status": "ok",
+        "status": "degraded" if warnings else "ok",
         "mode": settings.FORESIGHT_MODE,
         "memory_backend": "hindsight" if memory_service.is_live() else "mock",
         "llm_backend": "groq" if llm_client.is_live() else "mock",
+        "memory_bank_id": memory_service.bank_id if memory_service.is_live() else "offline-demo",
+        "warnings": warnings,
         "version": "0.1.0",
     }
 
@@ -113,16 +126,29 @@ app.include_router(ask_router, dependencies=[Depends(verify_api_key)])
 def search_memory(q: str = Query(..., min_length=1, description="Search query string")):
     try:
         results = memory_service.search_memories(query=q)
+        formatted_results = []
+        for item in results:
+            metadata = item.get("metadata") or {}
+            text = item.get("content") or item.get("text") or ""
+            formatted_results.append({
+                **item,
+                "content": text,
+                "created_at": metadata.get("created_at") or metadata.get("date") or "",
+                "tags": item.get("tags") or [],
+                "score": float(item.get("score") or 0.0),
+            })
         return {
             "query": q,
-            "count": len(results),
+            "count": len(formatted_results),
             "memory_backend": "hindsight" if memory_service.is_live() else "mock",
-            "results": results,
+            "bank_id": memory_service.bank_id if memory_service.is_live() else "offline-demo",
+            "results": formatted_results,
         }
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - convert provider errors into an API response.
+        logger.error("Memory search failed: %s", e)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": {"code": "MEMORY_SEARCH_ERROR", "message": str(e)}},
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE if memory_service.is_live() else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": {"code": "HINDSIGHT_RECALL_FAILED" if memory_service.is_live() else "MEMORY_SEARCH_ERROR", "message": str(e)}},
         )
 
 

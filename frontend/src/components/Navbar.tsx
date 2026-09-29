@@ -89,11 +89,19 @@ export function Navbar() {
             <div className="flex items-center gap-2.5">
               <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#12151C] border border-[#1F2430] text-xs">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2DD4A0] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2DD4A0]"></span>
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${health?.status === 'degraded' ? 'bg-[#FFB020]' : 'bg-[#2DD4A0]'} opacity-75`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${health?.status === 'degraded' ? 'bg-[#FFB020]' : 'bg-[#2DD4A0]'}`}></span>
                 </span>
-                <span className="text-[#8A90A2]">
-                  {health ? (health.mode === 'offline' ? 'Ready (Mock Engine)' : 'Live Groq/Hindsight') : 'Connecting...'}
+                <span className="text-[#8A90A2]" title={health?.warnings?.join('; ') || undefined}>
+                  {!health
+                    ? 'Connecting...'
+                    : health.status === 'degraded'
+                      ? 'Live setup incomplete'
+                      : health.mode === 'offline'
+                        ? 'Ready (Mock Engine)'
+                        : health.memory_backend === 'hindsight' && health.llm_backend === 'groq'
+                          ? 'Groq + Hindsight configured'
+                          : 'Live providers incomplete'}
                 </span>
               </div>
 

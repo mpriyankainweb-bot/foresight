@@ -22,6 +22,8 @@ export interface HealthResponse {
   mode: string;
   memory_backend: string;
   llm_backend: string;
+  memory_bank_id?: string;
+  warnings?: string[];
   version: string;
 }
 
@@ -152,6 +154,7 @@ export interface MemorySearchResponse {
   query: string;
   count: number;
   memory_backend: string;
+  bank_id?: string;
   results: MemorySearchResultItem[];
 }
 

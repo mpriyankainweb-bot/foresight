@@ -178,6 +178,14 @@ export default function AskPage() {
                   msg.id === assistantMsgId ? { ...msg, isStreaming: false } : msg
                 )
               );
+            } else if (data.type === 'error') {
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMsgId
+                    ? { ...msg, content: `Live integration error: ${data.message || data.code || 'unknown error'}`, isStreaming: false }
+                    : msg
+                )
+              );
             }
           } catch (e) {
             console.error('Error parsing line:', line, e);
