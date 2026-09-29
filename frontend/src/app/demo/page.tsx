@@ -78,13 +78,13 @@ export default function DemoControlPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#12151C] p-6 rounded-16 border border-[#1F2430]">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-extrabold text-white">Demo Control Room</h1>
+              <h1 className="text-2xl font-extrabold text-white">System Data & Memory Operations</h1>
               <Badge variant="primary">
-                <PlayCircle className="w-3.5 h-3.5 mr-1" /> Seed & Replay Studio
+                <PlayCircle className="w-3.5 h-3.5 mr-1" /> Seed & Replay Engine
               </Badge>
             </div>
             <p className="text-sm text-[#8A90A2]">
-              Replay the 12-month PayNest incident timeline into Hindsight memory or reset bank state for testing.
+              Seed incident history and deploy timelines into Hindsight memory bank or manage system state.
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function DemoControlPage() {
                   onClick={handleReplay}
                 >
                   <PlayCircle className="w-5 h-5" />
-                  <span>Run Demo Replay</span>
+                  <span>Seed Incident Memory</span>
                 </Button>
 
                 <Button
@@ -145,7 +145,7 @@ export default function DemoControlPage() {
                   onClick={handleReset}
                 >
                   <RotateCcw className="w-5 h-5" />
-                  <span>Reset Demo State</span>
+                  <span>Reset System Memory</span>
                 </Button>
               </div>
 
