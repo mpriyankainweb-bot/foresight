@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from backend.app.db import get_session
-from backend.app.models import DemoReplayResponse, DemoResetResponse
 from backend.app.memory.service import MemoryService
+from backend.app.models import DemoReplayResponse, DemoResetResponse
 from backend.app.services.demo_service import DemoService
 
 router = APIRouter(prefix="/api/v1/demo", tags=["demo"])

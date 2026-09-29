@@ -2,13 +2,13 @@ import json
 import logging
 from pathlib import Path
 from typing import Any
+
 from sqlmodel import Session, select
 
 from backend.app.memory.service import MemoryService
 from backend.app.models import (
     AnalyticsResponse,
     DeployCheckRecord,
-    DeployOutcomeRecord,
     LearningCurveDataPoint,
     TemporaryFixItem,
     TopRecurringCause,

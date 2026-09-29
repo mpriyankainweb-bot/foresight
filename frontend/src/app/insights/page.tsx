@@ -68,7 +68,7 @@ export default function InsightsPage() {
               </Badge>
             </div>
             <p className="text-sm text-[#8A90A2]">
-              Track risk prediction accuracy and MTTR reduction as PayNest's Hindsight memory bank grows.
+              Track risk prediction accuracy and MTTR reduction as PayNest&apos;s Hindsight memory bank grows.
             </p>
           </div>
 

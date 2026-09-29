@@ -59,7 +59,7 @@ export default function LandingPage() {
       content: (
         <div className="space-y-2 text-xs">
           <div className="flex items-center justify-between text-[#8A90A2] font-mono">
-            <span>Recall Query: "retry timeout 8s gateway"</span>
+            <span>Recall Query: &quot;retry timeout 8s gateway&quot;</span>
             <span className="text-[#2DD4A0]">3 Matches Found</span>
           </div>
           <div className="p-3 rounded-12 bg-[#FFB020]/10 border border-[#FFB020]/30 space-y-1">
@@ -86,7 +86,7 @@ export default function LandingPage() {
             </span>
           </div>
           <p className="text-[#E6E8EE] bg-[#0B0D12] p-2.5 rounded-8 border border-[#1F2430]">
-            "Do not ship without an idempotency-key validation and canary release. Similar timeout change caused 38 min outage."
+            &quot;Do not ship without an idempotency-key validation and canary release. Similar timeout change caused 38 min outage.&quot;
           </p>
         </div>
       ),
@@ -175,7 +175,7 @@ jobs:
             </h1>
 
             <p className="text-lg sm:text-xl text-[#8A90A2] max-w-2xl mx-auto leading-relaxed">
-              Before a risky change ships, Foresight compares it against your team's full incident history in Hindsight memory—citing past outages, temporary fixes, and failed attempts.
+              Before a risky change ships, Foresight compares it against your team&apos;s full incident history in Hindsight memory—citing past outages, temporary fixes, and failed attempts.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
@@ -260,7 +260,7 @@ jobs:
               Why Memory is the Core Difference
             </h2>
             <p className="text-sm sm:text-base text-[#8A90A2] max-w-xl mx-auto">
-              Without memory, AI agents give generic advice ("add tests"). With Hindsight memory, Foresight cites exact past outages, temporary fixes, and config drift patterns.
+              Without memory, AI agents give generic advice (&quot;add tests&quot;). With Hindsight memory, Foresight cites exact past outages, temporary fixes, and config drift patterns.
             </p>
           </div>
 

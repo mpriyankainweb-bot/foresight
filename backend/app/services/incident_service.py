@@ -1,13 +1,12 @@
-import json
 import logging
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
+
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-from backend.app.db import engine
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
 from backend.app.models import (
@@ -40,9 +39,6 @@ class IncidentService:
     def _build_offline_fix_suggestions(
         self, request: CreateIncidentRequest, recalled_memories: list[dict[str, Any]]
     ) -> dict[str, Any]:
-        combined = f"{request.service} {request.title} {request.alerts} {request.logs}".lower()
-        recalled_ids = {m["id"] for m in recalled_memories}
-
         default_suggestions = [
             FixSuggestionItem(
                 id="fix_001",
@@ -106,7 +102,6 @@ class IncidentService:
         # Recall memories using alerts, logs, title, service
         query = f"{request.service} {request.title} {request.alerts} {request.logs}"[:500]
         recalled_memories = self.memory_service.recall(query=query, limit=10)
-        recalled_ids = {m["id"] for m in recalled_memories}
 
         system_prompt = (
             "You are Foresight, an AI deploy-safety agent for payment systems. "
@@ -258,7 +253,7 @@ class IncidentService:
             root_cause=root_cause_str,
             timeline=[
                 f"{incident.created_at}: Incident created and alerts ingested.",
-                f"{datetime.now(timezone.utc).isoformat()}: Incident resolved following fix application.",
+                f"{datetime.now(UTC).isoformat()}: Incident resolved following fix application.",
             ],
             fix_that_worked=worked_fix_summary,
             fixes_that_failed=failed_fixes,
@@ -273,7 +268,7 @@ class IncidentService:
         incident.status = "resolved"
         incident.resolution_notes = request.resolution_notes
         incident.postmortem_json = postmortem.model_dump_json()
-        incident.resolved_at = datetime.now(timezone.utc).isoformat()
+        incident.resolved_at = datetime.now(UTC).isoformat()
 
         db_session.add(incident)
         db_session.commit()

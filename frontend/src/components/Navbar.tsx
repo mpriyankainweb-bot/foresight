@@ -12,6 +12,9 @@ import {
   PlayCircle,
   Database,
   Brain,
+  MessageSquare,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAppState } from '../app/providers';
 import { api, HealthResponse } from '../lib/api';
@@ -19,7 +22,7 @@ import { MemoryInspectorDrawer } from './MemoryInspectorDrawer';
 
 export function Navbar() {
   const pathname = usePathname();
-  const { memoryEnabled, toggleMemory, setMemoryInspectorOpen } = useAppState();
+  const { theme, toggleTheme, memoryEnabled, toggleMemory, setMemoryInspectorOpen } = useAppState();
   const [health, setHealth] = useState<HealthResponse | null>(null);
 
   useEffect(() => {
@@ -29,6 +32,7 @@ export function Navbar() {
   const navItems = [
     { label: 'Overview', href: '/', icon: ShieldAlert },
     { label: 'Deploy Check', href: '/check', icon: GitPullRequest },
+    { label: 'Ask Foresight', href: '/ask', icon: MessageSquare },
     { label: 'Incident Mode', href: '/incident', icon: AlertTriangle },
     { label: 'Insights', href: '/insights', icon: TrendingUp },
     { label: 'Integrate', href: '/integrate', icon: Code2 },
@@ -43,7 +47,7 @@ export function Navbar() {
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-2.5 group">
                 <div className="w-9 h-9 rounded-12 bg-gradient-to-tr from-[#7C5CFF] to-[#9E85FF] flex items-center justify-center text-white shadow-glow group-hover:scale-105 transition-transform">
-                  <ShieldAlert className="w-5 h-5" />
+                  <ShieldAlert className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -82,8 +86,8 @@ export function Navbar() {
               </nav>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#12151C] border border-[#1F2430] text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#12151C] border border-[#1F2430] text-xs">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2DD4A0] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2DD4A0]"></span>
@@ -92,6 +96,18 @@ export function Navbar() {
                   {health ? (health.mode === 'offline' ? 'Offline Mock' : 'Live Groq/Hindsight') : 'Connecting...'}
                 </span>
               </div>
+
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-12 bg-[#12151C] hover:bg-[#1A1E29] border border-[#1F2430] text-[#E6E8EE] transition-all"
+                title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-[#FFB020]" />
+                ) : (
+                  <Moon className="w-4 h-4 text-[#7C5CFF]" />
+                )}
+              </button>
 
               <button
                 onClick={toggleMemory}

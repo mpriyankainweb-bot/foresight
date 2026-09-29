@@ -1,5 +1,7 @@
-from typing import Generator
+from collections.abc import Generator
+
 from sqlmodel import Session, SQLModel, create_engine
+
 from backend.app.config import settings
 
 # connect_args={"check_same_thread": False} is required for SQLite in FastAPI

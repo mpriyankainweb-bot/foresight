@@ -105,7 +105,6 @@ jobs:
         with:
           api-key: \${{ secrets.FORESIGHT_API_KEY }}
           service: payments-gateway
-          title: "\${{ github.event.pull_request.title }}"
           fail-on-hold: "true"`,
 
     cli: `# Install CLI package locally
@@ -225,7 +224,17 @@ foresight check \\
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono text-[#8A90A2]">
-                  <span className="text-[#E6E8EE] font-bold">3. GitHub Action (.github/workflows/foresight.yml)</span>
+                  <span className="text-[#E6E8EE] font-bold">3. JavaScript / Node.js Client</span>
+                  <CopyButton text={snippets.javascript} />
+                </div>
+                <pre className="bg-[#0B0D12] p-4 rounded-12 border border-[#1F2430] text-xs font-mono text-[#38BDF8] overflow-x-auto">
+                  {snippets.javascript}
+                </pre>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-mono text-[#8A90A2]">
+                  <span className="text-[#E6E8EE] font-bold">4. GitHub Action (.github/workflows/foresight.yml)</span>
                   <CopyButton text={snippets.github} />
                 </div>
                 <pre className="bg-[#0B0D12] p-4 rounded-12 border border-[#1F2430] text-xs font-mono text-[#FFB020] overflow-x-auto">
@@ -235,7 +244,7 @@ foresight check \\
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono text-[#8A90A2]">
-                  <span className="text-[#E6E8EE] font-bold">4. Command-Line Interface (foresight check)</span>
+                  <span className="text-[#E6E8EE] font-bold">5. Command-Line Interface (foresight check)</span>
                   <CopyButton text={snippets.cli} />
                 </div>
                 <pre className="bg-[#0B0D12] p-4 rounded-12 border border-[#1F2430] text-xs font-mono text-[#E6E8EE] overflow-x-auto">

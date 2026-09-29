@@ -1,0 +1,40 @@
+name: 'Foresight Deploy Safety Check'
+description: 'AI deploy-safety agent comparing pull requests against team incident history in Hindsight memory.'
+inputs:
+  api-key:
+    description: 'Foresight API Key'
+    required: false
+    default: 'foresight-secret-key-123'
+  api-url:
+    description: 'Foresight API Base URL'
+    required: false
+    default: 'http://localhost:8000'
+  service:
+    description: 'Target service name'
+    required: false
+    default: 'payments-gateway'
+  fail-on-hold:
+    description: 'Fail action step if verdict is HOLD (true/false)'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'GitHub token for PR commenting'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Foresight PR Safety Check
+      shell: bash
+      env:
+        FORESIGHT_API_KEY: ${{ inputs.api-key }}
+        FORESIGHT_API_URL: ${{ inputs.api-url }}
+        FORESIGHT_SERVICE: ${{ inputs.service }}
+        FORESIGHT_FAIL_ON_HOLD: ${{ inputs.fail-on-hold }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BODY: ${{ github.event.pull_request.body }}
+        PR_NUMBER: ${{ github.event.number }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      run: python3 ${{ github.action_path }}/main.py

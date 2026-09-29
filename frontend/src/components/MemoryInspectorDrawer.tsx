@@ -40,8 +40,8 @@ export function MemoryInspectorDrawer() {
   };
 
   useEffect(() => {
-    if (memoryInspectorOpen && query) {
-      handleSearch(query);
+    if (memoryInspectorOpen && inspectorSearchQuery) {
+      handleSearch(inspectorSearchQuery);
     }
   }, [memoryInspectorOpen, inspectorSearchQuery]);
 

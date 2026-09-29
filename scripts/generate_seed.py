@@ -5,7 +5,6 @@ Generates and verifies 20 incidents and 40 deploys following SPEC Section 8 guid
 """
 
 import json
-import sys
 from pathlib import Path
 
 SEED_INCIDENTS = [
