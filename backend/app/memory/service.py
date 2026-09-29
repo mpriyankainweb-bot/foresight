@@ -103,7 +103,22 @@ class MemoryService:
     def recall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
         if self.is_live():
             try:
-                resp = self.client.recall(bank_id=self.bank_id, query=query, tags=tags)
+                import asyncio
+                import concurrent.futures
+
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+
+                if loop and loop.is_running():
+                    with concurrent.futures.ThreadPoolExecutor() as pool:
+                        def _do_async_recall():
+                            return asyncio.run(self.client.arecall(bank_id=self.bank_id, query=query, tags=tags))
+                        resp = pool.submit(_do_async_recall).result(timeout=10.0)
+                else:
+                    resp = self.client.recall(bank_id=self.bank_id, query=query, tags=tags)
+
                 results = []
                 for item in getattr(resp, "results", []):
                     results.append({
@@ -113,7 +128,7 @@ class MemoryService:
                         "tags": getattr(item, "tags", []),
                         "metadata": getattr(item, "metadata", {}),
                     })
-                return results
+                return results[:limit]
             except Exception as e:
                 logger.error(f"Error during Hindsight recall: {e}")
                 return []
