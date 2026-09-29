@@ -2,10 +2,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY frontend/ ./
+COPY . ./
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
