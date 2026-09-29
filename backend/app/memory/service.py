@@ -3,7 +3,10 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from hindsight_client import Hindsight
+try:
+    from hindsight_client import Hindsight
+except ImportError:  # The Hindsight SDK is installed only for live mode.
+    Hindsight = None  # type: ignore[assignment,misc]
 
 from backend.app.config import settings
 
@@ -19,6 +22,8 @@ class MemoryService:
         self._mock_memories: list[dict[str, Any]] = []
 
         if self.is_live():
+            if Hindsight is None:
+                raise RuntimeError("Live mode requires the Hindsight SDK; install foresight with the 'live' extra")
             self.client = Hindsight(api_key=self.api_key, base_url=self.api_url)
             self._init_live_bank()
         else:

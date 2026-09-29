@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: foresight
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: FORESIGHT_MODE
+        value: offline
+      - key: API_KEY
+        value: foresight-secret-key-123
+      - key: HINDSIGHT_BANK_ID
+        value: foresight-paynest

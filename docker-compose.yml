@@ -20,9 +20,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        FORESIGHT_API_PROXY_TARGET: http://backend:8000
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       - backend

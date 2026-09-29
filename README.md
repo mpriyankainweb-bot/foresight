@@ -102,14 +102,17 @@ Hindsight is the core engine of Foresight. Each organization operates a dedicate
 - Node.js 18+ & npm
 
 ### Environment Variables
-Copy `.env.example` to `.env`:
+Copy `.env.example` to `.env`. Offline mode needs no external API keys and installs only the core runtime:
 ```bash
+pip install -e .
 FORESIGHT_MODE=offline            # 'offline' (deterministic mock) or 'live'
 API_KEY=foresight-secret-key-123  # Master API key
 GROQ_API_KEY=                     # Groq API key for live mode
 HINDSIGHT_API_KEY=                # Hindsight Cloud API key for live mode
 HINDSIGHT_BANK_ID=foresight-paynest
 ```
+
+For live mode, install the optional Hindsight SDK with `pip install -e '.[live]'`. For development tests, use `pip install -e '.[dev]'`.
 
 ### 1. Backend Setup
 ```bash
@@ -157,20 +160,15 @@ foresight check \
 
 ### Running via Docker Compose
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 - Frontend: `http://localhost:3000`
 - Backend: `http://localhost:8000`
 
-### Vercel Deployment (Frontend)
-1. Import `frontend/` directory into Vercel.
-2. Set Environment Variable: `NEXT_PUBLIC_API_BASE_URL=https://your-backend.onrender.com`.
-3. Deploy.
+### Public offline demo on Render
+The root `render.yaml` deploys the Next.js frontend and FastAPI backend together as one Docker web service. In Render, create a Blueprint from this repository and select the `render.yaml` file. The service defaults to `FORESIGHT_MODE=offline`; Groq and Hindsight credentials are not required. The app serves the UI on Render's assigned port and proxies `/health` and `/api/*` to the local FastAPI process.
 
-### Render / Railway Deployment (Backend)
-1. Create new Web Service from repository with Docker runtime pointing to `backend/Dockerfile`.
-2. Set environment variables (`FORESIGHT_MODE`, `GROQ_API_KEY`, `HINDSIGHT_API_KEY`).
-3. Deploy.
+The Blueprint uses Render's free service plan. Free services can sleep when idle, and the container filesystem is ephemeral, so SQLite/demo state may reset after a restart or redeploy. The included data is synthetic and intended for demonstration, not production operations.
 
 ---
 
