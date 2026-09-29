@@ -26,4 +26,5 @@ class Settings(BaseSettings):
         elif self.HINDSIGHT_BASE_URL and self.HINDSIGHT_API_URL == "https://api.hindsight.vectorize.io":
             self.HINDSIGHT_API_URL = self.HINDSIGHT_BASE_URL
 
+
 settings = Settings()
