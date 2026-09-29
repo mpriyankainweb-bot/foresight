@@ -17,6 +17,13 @@ class Settings(BaseSettings):
 
     HINDSIGHT_API_KEY: str | None = None
     HINDSIGHT_API_URL: str = "https://api.hindsight.vectorize.io"
+    HINDSIGHT_BASE_URL: str | None = None
     HINDSIGHT_BANK_ID: str = "foresight-paynest"
+
+    def model_post_init(self, __context):
+        if self.HINDSIGHT_BASE_URL and not self.HINDSIGHT_API_URL:
+            self.HINDSIGHT_API_URL = self.HINDSIGHT_BASE_URL
+        elif self.HINDSIGHT_BASE_URL and self.HINDSIGHT_API_URL == "https://api.hindsight.vectorize.io":
+            self.HINDSIGHT_API_URL = self.HINDSIGHT_BASE_URL
 
 settings = Settings()

@@ -27,18 +27,18 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
     # In live mode with Groq configured, LLM performs completion reasoning over recalled memories
     system_prompt = (
         "You are Foresight, an AI deploy-safety agent for PayNest fintech platform. "
-        "Answer the user question strictly using the provided recalled Hindsight incident memories. "
-        "Provide a clear, structured, and evidence-backed response citing specific incident IDs and root causes."
+        "Answer the user's question directly and informatively using the provided recalled Hindsight incident memories. "
+        "Provide a clear, structured, markdown-formatted response detailing what happened, root causes, services affected, and preventative safety steps."
     )
 
     mem_context = "\n".join(
         [
-            f"• Document [{m.get('id', 'mem')}]: {m.get('text', m.get('content', ''))}"
+            f"• Incident Document [{m.get('id', 'mem')}]: {m.get('text', m.get('content', ''))}"
             for m in memories
         ]
     )
 
-    prompt = f"USER QUESTION: {question}\n\nRECALLED HINDSIGHT MEMORIES:\n{mem_context}"
+    prompt = f"USER QUESTION: {question}\n\nRECALLED HINDSIGHT MEMORIES:\n{mem_context}\n\nPlease synthesize a clear, comprehensive answer for the user based on these recalled memories:"
 
     # Use LLM client for synthesis
     try:
@@ -49,8 +49,17 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
                 system_prompt=system_prompt,
             )
             if raw_response and len(raw_response.strip()) > 10:
-                return raw_response.strip()
-    except Exception:
+                text = raw_response.strip()
+                if text.startswith("{") and text.endswith("}"):
+                    try:
+                        parsed = json.loads(text)
+                        for k in ["answer", "summary", "response", "message"]:
+                            if k in parsed and isinstance(parsed[k], str):
+                                return parsed[k].strip()
+                    except Exception:
+                        pass
+                return text
+    except Exception as e:
         pass
 
     # Deterministic synthesis over recalled memories if offline or fallback

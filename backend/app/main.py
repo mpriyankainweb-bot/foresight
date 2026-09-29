@@ -76,6 +76,17 @@ def verify_api_key(
     return x_api_key
 
 
+@app.get("/")
+def root():
+    return {
+        "message": "Foresight Deploy Safety API is running",
+        "docs_url": "/docs",
+        "health_url": "/health",
+        "mode": settings.FORESIGHT_MODE,
+        "version": "0.1.0",
+    }
+
+
 @app.get("/health")
 def health_check():
     return {

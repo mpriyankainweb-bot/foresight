@@ -181,14 +181,14 @@ jobs:
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
               <Link href="/check">
                 <Button size="lg" className="w-full sm:w-auto gap-2 text-base">
-                  <span>Try the Live Demo</span>
+                  <span>Launch Deploy Guard</span>
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
               <Link href="/demo">
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto gap-2 text-base">
                   <Activity className="w-5 h-5 text-[#2DD4A0]" />
-                  <span>Replay Demo Timeline</span>
+                  <span>System Data & Memory</span>
                 </Button>
               </Link>
             </div>

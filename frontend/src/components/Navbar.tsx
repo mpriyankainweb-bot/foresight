@@ -36,7 +36,7 @@ export function Navbar() {
     { label: 'Incident Mode', href: '/incident', icon: AlertTriangle },
     { label: 'Insights', href: '/insights', icon: TrendingUp },
     { label: 'Integrate', href: '/integrate', icon: Code2 },
-    { label: 'Demo Control', href: '/demo', icon: PlayCircle },
+    { label: 'System Operations', href: '/demo', icon: PlayCircle },
   ];
 
   return (
@@ -93,7 +93,7 @@ export function Navbar() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2DD4A0]"></span>
                 </span>
                 <span className="text-[#8A90A2]">
-                  {health ? (health.mode === 'offline' ? 'Offline Mock' : 'Live Groq/Hindsight') : 'Connecting...'}
+                  {health ? (health.mode === 'offline' ? 'Ready (Mock Engine)' : 'Live Groq/Hindsight') : 'Connecting...'}
                 </span>
               </div>
 
