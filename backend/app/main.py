@@ -34,12 +34,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS setup
+# CORS setup - support regex for Codespaces (.app.github.dev) and origins
 origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if origins else ["*"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

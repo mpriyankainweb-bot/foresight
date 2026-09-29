@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
-import { MemoryCitationItem } from '../../lib/api';
+import { MemoryCitationItem, getApiBaseUrl } from '../../lib/api';
 import {
   Send,
   Bot,
@@ -17,23 +17,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const getApiBaseUrl = (): string => {
-  if (typeof window !== 'undefined') {
-    if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-      return process.env.NEXT_PUBLIC_API_BASE_URL;
-    }
-    const host = window.location.hostname;
-    const protocol = window.location.protocol;
-    if (host.includes('app.github.dev')) {
-      const backendHost = host.replace(/-3000\./, '-8000.');
-      return `${protocol}//${backendHost}`;
-    }
-    return `${protocol}//${host}:8000`;
-  }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-};
-
-const API_BASE_URL = getApiBaseUrl();
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'foresight-secret-key-123';
 
 interface Message {
@@ -137,7 +120,8 @@ export default function AskPage() {
 
     try {
       const apiKey = typeof window !== 'undefined' ? (localStorage.getItem('foresight_api_key') || API_KEY) : API_KEY;
-      const response = await fetch(`${API_BASE_URL}/api/v1/ask`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/v1/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-const getApiBaseUrl = (): string => {
+export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined') {
     if (process.env.NEXT_PUBLIC_API_BASE_URL) {
       return process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -7,7 +7,7 @@ const getApiBaseUrl = (): string => {
     const host = window.location.hostname;
     const protocol = window.location.protocol;
     if (host.includes('app.github.dev')) {
-      const backendHost = host.replace(/-3000\./, '-8000.');
+      const backendHost = host.replace(/-3000\./, '-8000.').replace(/-3000-/, '-8000-');
       return `${protocol}//${backendHost}`;
     }
     return `${protocol}//${host}:8000`;
@@ -15,7 +15,6 @@ const getApiBaseUrl = (): string => {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 };
 
-const API_BASE_URL = getApiBaseUrl();
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'foresight-secret-key-123';
 
 export interface HealthResponse {
@@ -208,7 +207,7 @@ async function fetchApi<T>(path: string, options: RequestInit = {}): Promise<T> 
     ...options.headers,
   };
 
-  const url = `${API_BASE_URL}${path}`;
+  const url = `${getApiBaseUrl()}${path}`;
   const response = await fetch(url, { ...options, headers });
 
   if (!response.ok) {
