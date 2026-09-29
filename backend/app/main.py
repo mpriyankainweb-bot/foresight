@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 
+from pathlib import Path
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from backend.app.config import settings
@@ -145,3 +147,28 @@ def validation_exception_handler(request: Request, exc: RequestValidationError):
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"error": {"code": code, "message": msg}},
     )
+
+# Mount Next.js static build if frontend/out directory exists (for single web service deployment on Render)
+static_frontend_dir = Path(__file__).parent.parent.parent / "frontend" / "out"
+if static_frontend_dir.exists():
+    app.mount("/_next", StaticFiles(directory=static_frontend_dir / "_next"), name="next-static")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa_frontend(full_path: str):
+        # Exclude API and Health routes from SPA fallback
+        if full_path.startswith("api/") or full_path == "health" or full_path == "docs" or full_path == "openapi.json":
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        target_file = static_frontend_dir / full_path
+        if target_file.is_file():
+            return FileResponse(target_file)
+
+        html_file = static_frontend_dir / f"{full_path}.html"
+        if html_file.is_file():
+            return FileResponse(html_file)
+
+        index_file = static_frontend_dir / "index.html"
+        if index_file.is_file():
+            return FileResponse(index_file)
+
+        raise HTTPException(status_code=404, detail="Not Found")
