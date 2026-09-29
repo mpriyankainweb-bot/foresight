@@ -1,5 +1,21 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'foresight-secret-key-123';
+export const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+export const MASTER_API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'foresight-secret-key-123';
+
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_API_BASE_URL) {
+    // Relative path works via Next.js proxy rewrites in browser
+    return '';
+  }
+  return DEFAULT_API_BASE_URL;
+}
+
+export function getApiKey(): string {
+  if (typeof window !== 'undefined') {
+    const customKey = localStorage.getItem('foresight_api_key');
+    if (customKey) return customKey;
+  }
+  return MASTER_API_KEY;
+}
 
 export interface HealthResponse {
   status: string;
@@ -185,14 +201,34 @@ export interface DemoResetResponse {
 }
 
 async function fetchApi<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers = {
+  const baseUrl = getApiBaseUrl();
+  let apiKey = getApiKey();
+
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-API-Key': typeof window !== 'undefined' ? (localStorage.getItem('foresight_api_key') || API_KEY) : API_KEY,
-    ...options.headers,
+    'X-API-Key': apiKey,
+    ...(options.headers as Record<string, string> || {}),
   };
 
-  const url = `${API_BASE_URL}${path}`;
-  const response = await fetch(url, { ...options, headers });
+  const url = `${baseUrl}${path}`;
+  let response: Response;
+
+  try {
+    response = await fetch(url, { ...options, headers });
+  } catch (err: any) {
+    throw new Error(`Failed to fetch from backend at ${baseUrl || 'server'}. Please verify the Foresight API server is running on port 8000.`);
+  }
+
+  if (response.status === 401 && typeof window !== 'undefined' && localStorage.getItem('foresight_api_key')) {
+    // If custom localStorage key failed with 401, clear it and retry with master key
+    localStorage.removeItem('foresight_api_key');
+    headers['X-API-Key'] = MASTER_API_KEY;
+    try {
+      response = await fetch(url, { ...options, headers });
+    } catch (err: any) {
+      throw new Error(`Failed to fetch from backend at ${baseUrl || 'server'}. Please verify the Foresight API server is running on port 8000.`);
+    }
+  }
 
   if (!response.ok) {
     let errorData: any;
