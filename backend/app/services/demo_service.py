@@ -2,10 +2,16 @@ import json
 import logging
 from pathlib import Path
 from typing import Any
+
 from sqlmodel import Session, delete
 
-from backend.app.models import DemoReplayResponse, DemoResetResponse, DeployCheckRecord, DeployOutcomeRecord
 from backend.app.memory.service import MemoryService
+from backend.app.models import (
+    DemoReplayResponse,
+    DemoResetResponse,
+    DeployCheckRecord,
+    DeployOutcomeRecord,
+)
 
 logger = logging.getLogger(__name__)
 

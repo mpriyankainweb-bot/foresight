@@ -35,6 +35,7 @@ The bank must never be a hidden implementation detail. Judges must see it workin
 All routes under /api/v1. All accept and return JSON. Require an X-API-Key header except /health and demo-mode routes.
 POST /deploys/check: input {service, title, description, diff (optional), config_changes[], environment, author}. Output {risk_score 0-100, verdict SHIP|CANARY|HOLD, summary, reasons[], similar_incidents[{id, title, date, similarity_reason, fix_that_worked, fix_that_failed, held_for_days}], canary_plan, rollback_plan, memory_citations[], memory_used: bool, check_id}.
 POST /deploys/{check_id}/outcome: input {outcome: clean|degraded|incident, notes}. Retains the outcome.
+POST /ask: input {question}. Output streams memory citations and answer synthesized from Hindsight recall + LLM reasoning (no hardcoded rules).
 POST /incidents: create an incident from alerts and logs. Returns ranked fix suggestions from memory.
 POST /incidents/{id}/fix-attempts: log a fix attempt with outcome.
 POST /incidents/{id}/resolve: close the incident, generate a postmortem draft, and retain it.
@@ -50,8 +51,9 @@ Function-calling and JSON-output errors are common on these models. Always reque
 Never trust model output. Clamp risk_score, validate enums, and drop citations that do not map to real recalled memories (no hallucinated incidents).
 Log token usage and latency per call.
 7. Frontend: design and UX (must feel premium)
-Visual language: dark, calm, serious, "mission control for deploys."
-Colors: background #0B0D12, surface #12151C, border #1F2430, primary #7C5CFF, danger #FF4D6D, warning #FFB020, success #2DD4A0, text #E6E8EE, muted #8A90A2.
+Visual language: dark, calm, serious, "mission control for deploys." Supports a light/dark theme toggle with a polished light palette, defaulting to the system preference.
+Colors (Dark): background #0B0D12, surface #12151C, border #1F2430, primary #7C5CFF, danger #FF4D6D, warning #FFB020, success #2DD4A0, text #E6E8EE, muted #8A90A2.
+Colors (Light): background #F8FAFC, surface #FFFFFF, border #E2E8F0, primary #6366F1, danger #EF4444, warning #F59E0B, success #10B981, text #0F172A, muted #64748B.
 Fonts: Inter for UI, JetBrains Mono for code and logs. Generous spacing, 12-16px rounded corners, subtle glow on primary elements, soft gradients only in hero areas.
 Motion: Framer Motion for the risk gauge sweep, staggered card entrance, and smooth drawer transitions. Respect prefers-reduced-motion.
 Fully responsive down to a tablet, keyboard accessible, visible focus states, WCAG AA contrast.
@@ -61,6 +63,7 @@ Deploy Check (/check): the main screen. Left: form with change title, service, d
 Memory Inspector: a right-side drawer available on every screen showing recalled memories for the current verdict, with entity chips, dates, and relevance.
 Incident Mode (/incident): paste alerts or logs, get ranked fixes from memory, log fix attempts, one-click resolve with postmortem draft.
 Learning Curve (/insights): Recharts line charts of MTTR and prediction accuracy over time, memory growth counter, top recurring root causes, and a "fixes that only held temporarily" list.
+Ask Foresight (/ask): chat UI for asking questions about past deploys, outages, and temporary fixes. Each answer is generated from Hindsight recall + LLM reasoning, displays memory citations, and streams the response. Features suggested prompt chips: "What broke last time we changed retry timeouts?", "Which fixes only held temporarily?".
 Integrate (/integrate): API key generator, cURL and Python and JS snippets, GitHub Action YAML, CLI usage, all with copy buttons.
 Demo Control (/demo): Replay button that plays the seeded timeline with a progress bar and live memory counter, plus a reset button.
 Every screen needs proper loading skeletons, empty states with helpful copy, and clear error states. No lorem ipsum anywhere.

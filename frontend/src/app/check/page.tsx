@@ -162,7 +162,7 @@ export default function DeployCheckPage() {
               </Badge>
             </div>
             <p className="text-sm text-[#8A90A2]">
-              Simulate or evaluate PR changes against PayNest's incident memory bank.
+              Simulate or evaluate PR changes against PayNest&apos;s incident memory bank.
             </p>
           </div>
 

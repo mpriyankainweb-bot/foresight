@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,11 +7,12 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
 from backend.app.config import settings
-from backend.app.db import engine, get_session, init_db
+from backend.app.db import get_session, init_db
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
 from backend.app.models import ApiKeyRecord
 from backend.app.routers.analytics import router as analytics_router
+from backend.app.routers.ask import router as ask_router
 from backend.app.routers.demo import router as demo_router
 from backend.app.routers.deploys import router as deploys_router
 from backend.app.routers.incidents import router as incidents_router
@@ -93,6 +95,7 @@ app.include_router(keys_router)
 app.include_router(deploys_router, dependencies=[Depends(verify_api_key)])
 app.include_router(incidents_router, dependencies=[Depends(verify_api_key)])
 app.include_router(analytics_router, dependencies=[Depends(verify_api_key)])
+app.include_router(ask_router, dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/api/v1/memory/search", dependencies=[Depends(verify_api_key)])

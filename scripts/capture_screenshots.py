@@ -1,5 +1,6 @@
 import asyncio
 import os
+
 from playwright.async_api import async_playwright
 
 os.makedirs("/app/screenshots", exist_ok=True)

@@ -2,10 +2,10 @@ import json
 import logging
 import uuid
 from typing import Any
+
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
 
-from backend.app.db import engine
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
 from backend.app.models import (

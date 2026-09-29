@@ -4,7 +4,12 @@ from sqlmodel import Session
 from backend.app.db import get_session
 from backend.app.llm.client import LLMClient
 from backend.app.memory.service import MemoryService
-from backend.app.models import DeployCheckRequest, DeployCheckResponse, DeployOutcomeRequest, DeployOutcomeResponse
+from backend.app.models import (
+    DeployCheckRequest,
+    DeployCheckResponse,
+    DeployOutcomeRequest,
+    DeployOutcomeResponse,
+)
 from backend.app.services.deploy_service import DeployService
 
 router = APIRouter(prefix="/api/v1/deploys", tags=["deploys"])

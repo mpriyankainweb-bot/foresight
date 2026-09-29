@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from backend.app.db import get_session
-from backend.app.models import AnalyticsResponse
 from backend.app.memory.service import MemoryService
+from backend.app.models import AnalyticsResponse
 from backend.app.services.analytics_service import AnalyticsService
 
 router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
