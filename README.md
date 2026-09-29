@@ -10,18 +10,6 @@
 
 **🚀 Live Application URL:** [https://foresight-05ok.onrender.com](https://foresight-05ok.onrender.com)
 
----
-
-## 📌 GitHub Repository "About" Section
-
-When configuring your GitHub repository settings, use the following details for the **About** section on the right sidebar:
-
-* **Description:** Autonomous AI deploy-safety agent powered by Hindsight memory that prevents production outages by comparing PRs against historical incident postmortems.
-* **Website:** `https://foresight-05ok.onrender.com`
-* **Topics / Tags:** `deploy-safety`, `ai-agent`, `hindsight-memory`, `fintech`, `devops`, `incident-management`, `fastapi`, `nextjs`, `ci-cd`, `github-actions`
-
----
-
 ## 📖 About Foresight
 
 Foresight is an intelligent **AI Deploy-Safety Agent** purpose-built for fintech, payments, and mission-critical engineering teams. Before a high-risk PR or configuration change ships to production, Foresight automatically inspects the diff against the organization's complete deploy history and incident postmortems stored in **Hindsight memory**.
