@@ -39,15 +39,21 @@ class LLMClient:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-        payload = {
+        # Ensure system or user message includes the word 'json' when response_format is json_object
+        formatted_sys_prompt = system_prompt
+        if "json" not in system_prompt.lower() and "json" not in prompt.lower():
+            formatted_sys_prompt = f"{system_prompt}\n\nPlease respond in valid JSON format."
+
+        payload: dict[str, Any] = {
             "model": model,
             "messages": [
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": formatted_sys_prompt},
                 {"role": "user", "content": prompt},
             ],
-            "response_format": {"type": "json_object"},
             "temperature": 0.2,
         }
+        if "json" in formatted_sys_prompt.lower() or "json" in prompt.lower():
+            payload["response_format"] = {"type": "json_object"}
 
         start_time = time.time()
         with httpx.Client(timeout=30.0) as client:
