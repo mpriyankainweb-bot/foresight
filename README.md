@@ -1,179 +1,186 @@
-# Foresight 🛡️
+# Foresight 🛡️ — AI Deploy-Safety & Organizational Memory Agent
 
-**Tagline:** *Hindsight remembers. Foresight prevents.*
+[![Live Deployment](https://img.shields.io/badge/Live%20Demo-https%3A%2F%2Fforesight--05ok.onrender.com-brightgreen?style=for-the-badge&logo=render)](https://foresight-05ok.onrender.com)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Next.js 14](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
+[![Hindsight Cloud](https://img.shields.io/badge/Memory-Hindsight%20Cloud-6C5CE7?style=for-the-badge)](https://vectorize.io)
+[![Groq API](https://img.shields.io/badge/LLM-Groq%20Llama%20%2F%20GPT--OSS-orange?style=for-the-badge)](https://groq.com)
 
-Foresight is an AI deploy-safety agent designed for fintech and payments engineering teams. Before a high-risk change ships to production, Foresight analyzes the pull request or configuration diff against the team's entire incident postmortem and deploy history kept in **Hindsight memory**.
+> **"Hindsight remembers. Foresight prevents."**
 
-It answers the ultimate question: **"Should we ship this, and if not, why?"** When outages do occur, Foresight recalls what fixed similar incidents, what failed, and which quick fixes only held temporarily.
-
----
-
-## 1. Problem & Value Proposition
-
-Without memory, AI code reviewers yield generic, unhelpful advice like *"add unit tests and use a canary deployment."*
-
-With **Hindsight memory**, Foresight speaks with surgical context:
-> *"You changed the payment retry timeout from 30s to 8s. The same class of change caused SEV-1 double-debit outages on Aug 12 and Sep 3. Rollback fixed it in 38 minutes, but config drift brought back the issue 9 days later. Ship ONLY with a canary and mandatory idempotency-key header enforcement."*
+**Foresight** is an enterprise AI deploy-safety agent designed for engineering teams. Before a high-risk PR or configuration change ships to production, Foresight evaluates the proposed diff against your team’s complete incident history, past postmortems, and deployment records stored in **Hindsight Memory**.
 
 ---
 
-## 2. Architecture Diagram
+## 🌐 Live Application
+
+🚀 **Experience the Live Application:** [https://foresight-05ok.onrender.com](https://foresight-05ok.onrender.com)
+
+---
+
+## 💡 The Problem & Core Solution
+
+Generic LLM code reviewers issue unhelpful boilerplate like *"add unit tests and deploy via canary."* They have **zero organizational memory** of past outages, failed quick-fixes, or recurring config drift.
+
+With **Hindsight Memory**, Foresight provides surgical, evidence-backed evaluation:
+
+> 🚨 **SHIP VERDICT: HOLD (Risk Score: 87/100)**
+> *"Lowering `GATEWAY_RETRY_TIMEOUT_MS` from 30s to 8s matches identical changes that caused SEV-1 double-debit outages on Aug 12 (INC-2024-001) and Sep 3 (INC-2024-002). Previous rollback resolved it in 38m. Ship ONLY with a canary and mandatory client-side idempotency keys."*
+
+---
+
+## ✨ Key Features & Capability Suite
+
+| Feature | Description |
+| :--- | :--- |
+| **🚀 Deploy Safety Evaluator (`/check`)** | Analyzes PR title, service, and diff against Hindsight memory to assign immediate `SHIP`, `CANARY`, or `HOLD` verdicts with risk scores and cited incident precedents. |
+| **🧠 Memory ON vs OFF Dual Analysis** | Toggle memory OFF to benchmark standard LLMs against Foresight’s memory-augmented engine, demonstrating zero hallucination and clear citation enforcement. |
+| **💬 Ask Foresight (`/ask`)** | Real-time streaming conversational assistant that recalls past incidents, failed fix attempts, root causes, and temporary vs permanent fix efficacy. |
+| **📊 Insights & Learning Curve (`/insights`)** | Visual analytics dashboard showcasing incident frequency reduction, deployment risk scores, and organizational memory bank growth over time. |
+| **🛠️ Incident Management & Ingestion (`/incident`)** | Seamlessly ingest new incident postmortems, Slack excerpts, and error logs into Hindsight memory (`retain`) for instant future recall. |
+| **⚡ CLI & CI/CD GitHub Action** | Run `foresight check` in local terminal environments or automatically block risky PR merges in GitHub workflows. |
+
+---
+
+## 🔍 Feature Walkthrough & Captions
+
+### 1. Launch Deploy Guard (`/check`)
+Evaluate any PR diff or configuration change. Foresight compares the diff against recalled memories, scores risk from 0–100, generates a structured risk brief, and cites past SEV-1/SEV-2 incidents.
+
+### 2. Live Memory Query & Chat (`/ask`)
+Ask natural language questions like *"What broke last time we touched retry timeouts?"* Foresight streams synthesized answers directly from Hindsight memory with interactive citation cards.
+
+### 3. System Data & Memory Control (`/demo`)
+Seed 20 real-world incident postmortems and 40 past deployment logs into Hindsight memory with a single click to simulate production environments.
+
+### 4. Organizational Learning Dashboard (`/insights`)
+Track risk reduction metrics over time. As Hindsight retains more postmortems, deploy risk accuracy improves, preventing repeat outages.
+
+---
+
+## 📊 Memory ON vs Memory OFF Benchmark
+
+| Metric / Dimension | Standard LLM (Memory OFF) | Foresight (Memory ON + Hindsight) |
+| :--- | :--- | :--- |
+| **Verdict** | `CANARY` (Risk Score: 42/100) | `HOLD` (Risk Score: 87/100) |
+| **Context** | Generic advice ("Test your endpoints") | Precise historical match ("Matches INC-2024-001 SEV-1 outage") |
+| **Citations** | 0 Citations | Cited INC-2024-001, INC-2024-002 with root causes and fixes |
+| **Actionability** | Standard unit tests | Mandatory idempotency keys & rollback parameters |
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
-    subgraph Clients & Integrations
-        A[Next.js 14 Frontend UI]
-        B[Foresight CLI]
-        C[GitHub Action PR Guard]
+    subgraph Frontend & Interfaces
+        UI[Next.js 14 Web App]
+        CLI[Foresight CLI]
+        GHA[GitHub Action PR Guard]
     end
 
-    subgraph Backend Engine [FastAPI + SQLModel]
-        D[API Router /api/v1]
-        E[Deploy Safety Evaluator]
-        F[Incident Resolution Engine]
-        G[Analytics & Learning Curve]
+    subgraph FastAPI Backend Server
+        API[API Router /api/v1]
+        EVAL[Deploy Safety Engine]
+        MEM_SVC[Memory Service]
+        LLM_SVC[LLM Synthesis Client]
     end
 
-    subgraph Memory & Reasoning
-        H[(Hindsight Cloud Bank)]
-        I[Groq API: GPT-OSS-120B / Qwen3-32B]
+    subgraph Cloud AI Infrastructure
+        HINDSIGHT[(Hindsight Cloud Memory Bank)]
+        GROQ[Groq API: Llama / GPT-OSS Models]
     end
 
-    A -->|HTTP / JSON| D
-    B -->|HTTP / JSON| D
-    C -->|HTTP / JSON| D
+    UI -->|HTTP / REST| API
+    CLI -->|HTTP / REST| API
+    GHA -->|HTTP / REST| API
 
-    D --> E
-    D --> F
-    D --> G
+    API --> EVAL
+    EVAL --> MEM_SVC
+    EVAL --> LLM_SVC
 
-    E -->|recall & retain| H
-    E -->|JSON reasoning| I
-    F -->|retain postmortems| H
-    G -->|aggregate metrics| D
+    MEM_SVC -->|retain / recall| HINDSIGHT
+    LLM_SVC -->|structured JSON completion| GROQ
 ```
 
 ---
 
-## 3. How Hindsight Memory is Used
+## 🛠️ Tech Stack & Monorepo Structure
 
-Hindsight is the core engine of Foresight. Each organization operates a dedicated Hindsight memory bank (e.g. `foresight-paynest`).
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, TanStack Query, Framer Motion, Recharts.
+* **Backend:** Python 3.12, FastAPI, Pydantic v2, SQLModel (SQLite), Uvicorn.
+* **AI & Memory:** Hindsight Cloud (`hindsight-client`), Groq API (`openai/gpt-oss-120b` / `qwen/qwen3-32b`).
+* **Deployment & Containerization:** Multi-stage Docker, Render Cloud Web Service (`render.yaml`).
 
-### Core Hindsight SDK Calls
-
-1. **`retain` (Ingesting Incidents & Outcomes):**
-   ```python
-   hindsight.retain(
-       bank_id="foresight-paynest",
-       content="[INC-2024-001] Gateway timeout reduction from 30s to 8s caused downstream retry storm and double debits...",
-       document_id="INC-2024-001",
-       tags=["payments-gateway", "SEV-1", "retry_storm"],
-       metadata={"service": "payments-gateway", "root_cause": "retry_storm"}
-   )
-   ```
-
-2. **`recall` (Retrieving Historical Precedents):**
-   ```python
-   memories = hindsight.recall(
-       bank_id="foresight-paynest",
-       query="payments-gateway retry timeout GATEWAY_RETRY_TIMEOUT_MS=8000",
-       tags=["payments-gateway"]
-   )
-   ```
-
-3. **`reflect` (Synthesizing Risk Briefs):**
-   Synthesizes cautious, evidence-driven verdicts backed by recalled incident documents and temporary fix durations.
-
-### Before & After Comparison: Memory OFF vs Memory ON
-
-| Feature | Memory OFF (Generic LLM) | Memory ON (Hindsight + LLM) |
-| --- | --- | --- |
-| **Verdict** | `CANARY` (Risk Score: 45/100) | `HOLD` (Risk Score: 87/100) |
-| **Summary** | "Retry timeout was reduced. Ensure upstream service can handle faster retries." | **CRITICAL RISK:** Lowering gateway retry timeout to 8s matches identical changes that caused SEV-1 double-debit outages on Aug 12 and Sep 3. |
-| **Past Precedents** | None cited (0 citations). | Cited **INC-2024-001** & **INC-2024-002** with similarity reasons, failed fixes, and working fixes. |
-| **Actionable Guidance** | "Run standard unit tests." | "Rollback timeout to >=25s, enforce client-side idempotency keys, and deploy only via canary." |
+```
+.
+├── Dockerfile                  # Production multi-stage build container
+├── render.yaml                 # Render 1-click Web Service blueprint
+├── backend/                    # FastAPI backend application
+│   ├── app/
+│   │   ├── main.py             # FastAPI app entrypoint & static frontend mounting
+│   │   ├── config.py           # Configuration settings
+│   │   ├── memory/             # Hindsight Cloud memory client
+│   │   ├── llm/                # Groq API client & JSON formatter
+│   │   └── routers/            # /check, /ask, /incidents, /deploys, /analytics
+│   └── tests/                  # Pytest backend test suite
+├── frontend/                   # Next.js 14 web application
+│   ├── src/
+│   │   ├── app/                # Next.js App Router pages (/check, /ask, /insights)
+│   │   ├── components/         # UI components & Navigation
+│   │   └── lib/                # API client utilities
+├── cli/                        # Foresight CLI tool
+└── data/seed/                  # Synthetic incident and deploy seed data
+```
 
 ---
 
-## 4. Quickstart & Local Setup
+## 💻 Local Quickstart Guide
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+ & npm
+* Python 3.11+
+* Node.js 18+
 
-### Environment Variables
-Copy `.env.example` to `.env`:
+### 1. Run in Offline / Demo Mode (No API keys required)
+
 ```bash
-FORESIGHT_MODE=offline            # 'offline' (deterministic mock) or 'live'
-API_KEY=foresight-secret-key-123  # Master API key
-GROQ_API_KEY=                     # Groq API key for live mode
-HINDSIGHT_API_KEY=                # Hindsight Cloud API key for live mode
-HINDSIGHT_BANK_ID=foresight-paynest
-```
+# 1. Clone repository
+git clone https://github.com/mpriyankainweb-bot/foresight.git
+cd foresight
 
-### 1. Backend Setup
-```bash
-# Install dependencies in editable mode
-pip install -e ".[dev]"
+# 2. Setup backend Python environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -e .
 
-# Start FastAPI server
+# 3. Start FastAPI server (offline mock mode)
+export FORESIGHT_MODE=offline
 uvicorn backend.app.main:app --reload --port 8000
-```
-API docs available at `http://localhost:8000/docs`.
 
-### 2. Frontend Setup
-```bash
+# 4. In a new terminal, start Next.js frontend
 cd frontend
 npm install
 npm run dev
 ```
-Access UI at `http://localhost:3000`.
 
-### 3. CLI Setup
-```bash
-pip install -e cli/
-
-# Run CLI check
-foresight check \
-  --service payments-gateway \
-  --title "Lower gateway retry timeout from 30s to 8s" \
-  --diff ./change.diff
-```
+Visit **[http://localhost:3000](http://localhost:3000)** in your browser!
 
 ---
 
-## 5. 90-Second Demo Script
+## 🚀 One-Click Deploy on Render
 
-1. **Reset & Seed State:** Open `/demo` page or click **"Run Demo Replay"** to seed 20 PayNest incidents and 40 past deploys into memory.
-2. **Run Friday 5:40 PM Check:** Navigate to `/check`. Select example *"Friday 5:40 PM: Gateway Retry Timeout Reduction"* and click **"Run Safety Check"**.
-3. **Observe Cited HOLD Verdict:** See Risk Score 87/100, `HOLD` badge, and cited past double-debit incidents (INC-2024-001, INC-2024-002).
-4. **Toggle Memory OFF:** Click the top **"Memory ON"** toggle to switch to **"Memory OFF"** and click **"Re-run Check"**. Watch the verdict drop to a generic response without citations.
-5. **Ask Foresight:** Go to `/ask` and click the prompt chip *"What broke last time we changed retry timeouts?"* to view real-time streaming answer with Hindsight citations.
-6. **Review Insights:** Visit `/insights` to inspect the learning curve showing risk accuracy climbing over time as memory grows.
+This repository is pre-configured with a root `Dockerfile` and `render.yaml` for 1-click deployment on **Render**:
 
----
+1. Log in to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** -> **Web Service**.
+3. Connect your GitHub repository (`mpriyankainweb-bot/foresight`).
+4. Select runtime **Docker** and branch `main`.
+5. Click **Create Web Service**.
 
-## 6. Docker & Deployment
-
-### Running via Docker Compose
-```bash
-docker-compose up --build
-```
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:8000`
-
-### Vercel Deployment (Frontend)
-1. Import `frontend/` directory into Vercel.
-2. Set Environment Variable: `NEXT_PUBLIC_API_BASE_URL=https://your-backend.onrender.com`.
-3. Deploy.
-
-### Render / Railway Deployment (Backend)
-1. Create new Web Service from repository with Docker runtime pointing to `backend/Dockerfile`.
-2. Set environment variables (`FORESIGHT_MODE`, `GROQ_API_KEY`, `HINDSIGHT_API_KEY`).
-3. Deploy.
+Render will automatically build the Next.js static assets and run the FastAPI server on port `$PORT`.
 
 ---
 
-## 7. License & Synthetic Data Disclaimer
+## 📄 License & Disclaimer
 
-All data in `data/seed/` is synthetic and pattern-based, inspired by real public incident postmortems adapted into the fictional PayNest payments platform.
+All incident data in `data/seed/` is synthetic and pattern-driven, inspired by public engineering postmortems adapted for the PayNest payments domain.
