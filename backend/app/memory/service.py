@@ -150,6 +150,41 @@ class MemoryService:
                 self._mock_memories.append(mock_entry)
             return {"status": "success", "backend": "mock", "document_id": mem_id}
 
+    async def arecall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
+        if self.is_live():
+            started_at = time.monotonic()
+            client = self._get_client()
+            if not client:
+                raise RuntimeError("Hindsight SDK client is not available")
+            try:
+                resp = await client.arecall(bank_id=self.bank_id, query=query, tags=tags)
+                results = []
+                for item in getattr(resp, "results", []):
+                    results.append({
+                        "id": getattr(item, "id", getattr(item, "document_id", "mem-live")),
+                        "text": getattr(item, "text", getattr(item, "content", str(item))),
+                        "score": getattr(item, "score", 0.9),
+                        "tags": getattr(item, "tags", []),
+                        "metadata": getattr(item, "metadata", {}),
+                    })
+                logger.info(
+                    "Hindsight arecall succeeded | bank_id=%s | result_count=%d | latency_ms=%.1f",
+                    self.bank_id,
+                    len(results[:limit]),
+                    (time.monotonic() - started_at) * 1000,
+                )
+                return results[:limit]
+            except Exception as e:  # noqa: BLE001 - surface every Hindsight recall failure.
+                detail = _safe_hindsight_error(e, self.api_key)
+                logger.error(
+                    "Hindsight arecall failed | bank_id=%s | error=%s",
+                    self.bank_id,
+                    detail,
+                )
+                raise RuntimeError(f"Hindsight recall failed for bank '{self.bank_id}': {detail}") from None
+        else:
+            return self.recall(query=query, tags=tags, limit=limit)
+
     def recall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
         if self.is_live():
             started_at = time.monotonic()
@@ -158,7 +193,6 @@ class MemoryService:
                 raise RuntimeError("Hindsight SDK client is not available")
             try:
                 import asyncio
-                import concurrent.futures
 
                 try:
                     loop = asyncio.get_running_loop()
@@ -166,10 +200,11 @@ class MemoryService:
                     loop = None
 
                 if loop and loop.is_running():
-                    with concurrent.futures.ThreadPoolExecutor() as pool:
-                        def _do_sync_recall():
-                            return client.recall(bank_id=self.bank_id, query=query, tags=tags)
-                        resp = pool.submit(_do_sync_recall).result(timeout=35.0)
+                    fut = asyncio.run_coroutine_threadsafe(
+                        client.arecall(bank_id=self.bank_id, query=query, tags=tags),
+                        loop,
+                    )
+                    resp = fut.result(timeout=35.0)
                 else:
                     resp = client.recall(bank_id=self.bank_id, query=query, tags=tags)
 

@@ -77,7 +77,7 @@ def synthesize_answer_from_memories(question: str, memories: list[dict]) -> str:
 async def generate_ask_stream(question: str):
     # 1. Recall relevant memories from Hindsight
     try:
-        memories = memory_service.recall(query=question, limit=5)
+        memories = await memory_service.arecall(query=question, limit=5)
     except Exception as exc:  # noqa: BLE001 - provider SDK/network errors vary by failure mode.
         logger.error("Ask Foresight memory recall failed: %s", exc)
         yield json.dumps({"type": "error", "code": "HINDSIGHT_RECALL_FAILED", "message": str(exc)}) + "\n"

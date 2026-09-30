@@ -94,14 +94,14 @@ class IncidentService:
             "memory_citations": citations,
         }
 
-    def create_incident(
+    async def create_incident(
         self, request: CreateIncidentRequest, db_session: Session
     ) -> CreateIncidentResponse:
         incident_id = f"inc_{uuid.uuid4().hex[:12]}"
 
         # Recall memories using alerts, logs, title, service
         query = f"{request.service} {request.title} {request.alerts} {request.logs}"[:500]
-        recalled_memories = self.memory_service.recall(query=query, limit=10)
+        recalled_memories = await self.memory_service.arecall(query=query, limit=10)
 
         system_prompt = (
             "You are Foresight, an AI deploy-safety agent for payment systems. "

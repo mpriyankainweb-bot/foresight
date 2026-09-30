@@ -20,12 +20,12 @@ deploy_service = DeployService(memory_service=memory_service, llm_client=llm_cli
 
 
 @router.post("/check", response_model=DeployCheckResponse)
-def check_deploy(
+async def check_deploy(
     request: DeployCheckRequest,
     session: Session = Depends(get_session),
 ):
     try:
-        return deploy_service.check_deploy(request=request, db_session=session)
+        return await deploy_service.check_deploy(request=request, db_session=session)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

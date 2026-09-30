@@ -130,7 +130,7 @@ class DeployService:
             ],
         }
 
-    def check_deploy(self, request: DeployCheckRequest, db_session: Session) -> DeployCheckResponse:
+    async def check_deploy(self, request: DeployCheckRequest, db_session: Session) -> DeployCheckResponse:
         check_id = f"chk_{uuid.uuid4().hex[:12]}"
 
         # Mode OFF: memory_enabled=False
@@ -182,7 +182,7 @@ class DeployService:
             query_parts.append(request.diff[:300])
 
         query = " ".join(query_parts)
-        recalled_memories = self.memory_service.recall(query=query, limit=10)
+        recalled_memories = await self.memory_service.arecall(query=query, limit=10)
         recalled_ids = {m["id"] for m in recalled_memories}
 
         system_prompt = (

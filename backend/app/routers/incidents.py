@@ -22,12 +22,12 @@ incident_service = IncidentService(memory_service=memory_service, llm_client=llm
 
 
 @router.post("", response_model=CreateIncidentResponse)
-def create_incident(
+async def create_incident(
     request: CreateIncidentRequest,
     session: Session = Depends(get_session),
 ):
     try:
-        return incident_service.create_incident(request=request, db_session=session)
+        return await incident_service.create_incident(request=request, db_session=session)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

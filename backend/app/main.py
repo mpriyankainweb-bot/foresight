@@ -123,9 +123,9 @@ app.include_router(ask_router, dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/api/v1/memory/search", dependencies=[Depends(verify_api_key)])
-def search_memory(q: str = Query(..., min_length=1, description="Search query string")):
+async def search_memory(q: str = Query(..., min_length=1, description="Search query string")):
     try:
-        results = memory_service.search_memories(query=q)
+        results = await memory_service.arecall(query=q, limit=20)
         formatted_results = []
         for item in results:
             metadata = item.get("metadata") or {}
