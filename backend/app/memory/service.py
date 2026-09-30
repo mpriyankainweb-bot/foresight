@@ -33,20 +33,17 @@ class MemoryService:
         if self.is_live():
             if Hindsight is None:
                 raise RuntimeError("Live mode requires the Hindsight SDK; install foresight with the 'live' extra")
-            try:
-                self.client = Hindsight(api_key=self.api_key, base_url=self.api_url, timeout=30.0)
-            except Exception as exc:  # noqa: BLE001 - SDK construction errors are provider/configuration failures.
-                self.client = None
-                self.initialization_error = _safe_hindsight_error(exc, self.api_key)
-                logger.error("Hindsight client initialization failed: %s", self.initialization_error)
-            else:
-                self._init_live_bank()
+            self._init_live_bank()
         else:
-            self.client = None
             self._init_mock_bank()
 
     def is_live(self) -> bool:
         return self.mode == "live" and bool(self.api_key and self.api_key.strip())
+
+    def _get_client(self):
+        if not self.is_live() or Hindsight is None:
+            return None
+        return Hindsight(api_key=self.api_key, base_url=self.api_url, timeout=30.0)
 
     def _bank_already_exists(self, exc: BaseException) -> bool:
         status_code = getattr(exc, "status_code", None)
@@ -56,8 +53,11 @@ class MemoryService:
         return status_code == 409 or "already exists" in message or "bank exists" in message
 
     def _init_live_bank(self):
+        client = self._get_client()
+        if not client:
+            return
         try:
-            self.client.create_bank(
+            client.create_bank(
                 bank_id=self.bank_id,
                 name="Foresight PayNest Safety Bank",
                 mission="Remember deploys, incidents, root causes, fixes attempted, whether each fix worked, whether it held, and engineering context around them. Prioritize causal links between changes and outages.",
@@ -105,8 +105,11 @@ class MemoryService:
         metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if self.is_live():
+            client = self._get_client()
+            if not client:
+                raise RuntimeError("Hindsight SDK client is not available")
             try:
-                self.client.retain(
+                client.retain(
                     bank_id=self.bank_id,
                     content=content,
                     document_id=document_id,
@@ -150,6 +153,9 @@ class MemoryService:
     def recall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
         if self.is_live():
             started_at = time.monotonic()
+            client = self._get_client()
+            if not client:
+                raise RuntimeError("Hindsight SDK client is not available")
             try:
                 import asyncio
                 import concurrent.futures
@@ -162,10 +168,10 @@ class MemoryService:
                 if loop and loop.is_running():
                     with concurrent.futures.ThreadPoolExecutor() as pool:
                         def _do_sync_recall():
-                            return self.client.recall(bank_id=self.bank_id, query=query, tags=tags)
+                            return client.recall(bank_id=self.bank_id, query=query, tags=tags)
                         resp = pool.submit(_do_sync_recall).result(timeout=35.0)
                 else:
-                    resp = self.client.recall(bank_id=self.bank_id, query=query, tags=tags)
+                    resp = client.recall(bank_id=self.bank_id, query=query, tags=tags)
 
                 results = []
                 for item in getattr(resp, "results", []):
