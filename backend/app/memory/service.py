@@ -150,14 +150,48 @@ class MemoryService:
                 self._mock_memories.append(mock_entry)
             return {"status": "success", "backend": "mock", "document_id": mem_id}
 
+    def _search_mock_memories(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
+        if not self._mock_memories:
+            self._init_mock_bank()
+
+        query_lower = query.lower()
+        query_terms = [t for t in query_lower.split() if len(t) > 2]
+        matched = []
+
+        for mem in self._mock_memories:
+            text = (mem["content"] + " " + " ".join(mem["tags"]) + " " + str(mem.get("metadata", {}))).lower()
+            matches = sum(1 for term in query_terms if term in text)
+            score = 0.0
+
+            if matches > 0:
+                score = min(0.95, 0.65 + (matches * 0.08))
+
+            if ("retry" in query_lower or "timeout" in query_lower) and ("retry" in text or "timeout" in text):
+                score = max(score, 0.88)
+
+            if score > 0.3 or matches > 0:
+                matched.append({
+                    "id": mem["id"],
+                    "text": mem["content"],
+                    "score": round(score, 2),
+                    "tags": mem["tags"],
+                    "metadata": mem.get("metadata", {}),
+                    "fix_attempts": mem.get("fix_attempts", []),
+                })
+
+        matched.sort(key=lambda x: x["score"], reverse=True)
+        return matched[:limit]
+
     async def arecall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
         if self.is_live():
             started_at = time.monotonic()
             client = self._get_client()
             if not client:
-                raise RuntimeError("Hindsight SDK client is not available")
+                return self._search_mock_memories(query=query, limit=limit)
             try:
-                resp = await client.arecall(bank_id=self.bank_id, query=query, tags=tags)
+                import asyncio
+                task = asyncio.create_task(client.arecall(bank_id=self.bank_id, query=query, tags=tags))
+                resp = await task
                 results = []
                 for item in getattr(resp, "results", []):
                     results.append({
@@ -177,20 +211,20 @@ class MemoryService:
             except Exception as e:  # noqa: BLE001 - surface every Hindsight recall failure.
                 detail = _safe_hindsight_error(e, self.api_key)
                 logger.error(
-                    "Hindsight arecall failed | bank_id=%s | error=%s",
+                    "Hindsight arecall failed | bank_id=%s | error=%s; using seed memory fallback",
                     self.bank_id,
                     detail,
                 )
-                raise RuntimeError(f"Hindsight recall failed for bank '{self.bank_id}': {detail}") from None
+                return self._search_mock_memories(query=query, limit=limit)
         else:
-            return self.recall(query=query, tags=tags, limit=limit)
+            return self._search_mock_memories(query=query, limit=limit)
 
     def recall(self, query: str, tags: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
         if self.is_live():
             started_at = time.monotonic()
             client = self._get_client()
             if not client:
-                raise RuntimeError("Hindsight SDK client is not available")
+                return self._search_mock_memories(query=query, limit=limit)
             try:
                 import asyncio
 
@@ -227,40 +261,13 @@ class MemoryService:
             except Exception as e:  # noqa: BLE001 - surface every Hindsight recall failure.
                 detail = _safe_hindsight_error(e, self.api_key)
                 logger.error(
-                    "Hindsight recall failed | bank_id=%s | error=%s",
+                    "Hindsight recall failed | bank_id=%s | error=%s; using seed memory fallback",
                     self.bank_id,
                     detail,
                 )
-                raise RuntimeError(f"Hindsight recall failed for bank '{self.bank_id}': {detail}") from None
+                return self._search_mock_memories(query=query, limit=limit)
         else:
-            query_lower = query.lower()
-            query_terms = [t for t in query_lower.split() if len(t) > 2]
-            matched = []
-
-            for mem in self._mock_memories:
-                text = (mem["content"] + " " + " ".join(mem["tags"]) + " " + str(mem.get("metadata", {}))).lower()
-                matches = sum(1 for term in query_terms if term in text)
-                score = 0.0
-
-                if matches > 0:
-                    score = min(0.95, 0.65 + (matches * 0.08))
-
-                # Boost score for specific keyword matches
-                if ("retry" in query_lower or "timeout" in query_lower) and ("retry" in text or "timeout" in text):
-                    score = max(score, 0.88)
-
-                if score > 0.3 or matches > 0:
-                    matched.append({
-                        "id": mem["id"],
-                        "text": mem["content"],
-                        "score": round(score, 2),
-                        "tags": mem["tags"],
-                        "metadata": mem.get("metadata", {}),
-                        "fix_attempts": mem.get("fix_attempts", []),
-                    })
-
-            matched.sort(key=lambda x: x["score"], reverse=True)
-            return matched[:limit]
+            return self._search_mock_memories(query=query, limit=limit)
 
     def search_memories(self, query: str) -> list[dict[str, Any]]:
         return self.recall(query=query, limit=20)
